@@ -1,4 +1,5 @@
 import type { ProviderCategory, OpenCodeProviderConfig } from "../types";
+import { removeCommercialPromotion } from "./branding";
 import type { PresetTheme, TemplateValueConfig } from "./claudeProviderPresets";
 
 export interface OpenCodeProviderPreset {
@@ -1848,3 +1849,5 @@ export const opencodeProviderPresets: OpenCodeProviderPreset[] = [
     isCustomTemplate: true,
   },
 ];
+
+opencodeProviderPresets.forEach(removeCommercialPromotion);

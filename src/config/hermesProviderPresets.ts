@@ -4,6 +4,7 @@
  */
 import type { ProviderCategory } from "../types";
 import type { PresetTheme, TemplateValueConfig } from "./claudeProviderPresets";
+import { removeCommercialPromotion } from "./branding";
 
 /**
  * Marker field and source values that `hermes_config.rs::get_providers`
@@ -1383,3 +1384,5 @@ export const hermesProviderPresets: HermesProviderPreset[] = [
     },
   },
 ];
+
+hermesProviderPresets.forEach(removeCommercialPromotion);

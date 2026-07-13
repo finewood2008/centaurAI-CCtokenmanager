@@ -3,6 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { SHOW_PROVIDER_PRESETS } from "@/config/branding";
+import { ProviderPresetSelector } from "./ProviderPresetSelector";
 import {
   ChevronDown,
   ChevronRight,
@@ -41,7 +43,6 @@ import { CodexOAuthSection } from "./CodexOAuthSection";
 import { CopilotAuthSection } from "./CopilotAuthSection";
 import { EndpointField } from "./shared/EndpointField";
 import { ModelDropdown } from "./shared/ModelDropdown";
-import { ProviderPresetSelector } from "./ProviderPresetSelector";
 import { providerSchema, type ProviderFormData } from "@/lib/schemas/provider";
 import type {
   ClaudeApiFormat,
@@ -369,6 +370,7 @@ export function ClaudeDesktopProviderForm({
     }),
     [t],
   );
+
   const activeProviderType =
     activePreset?.providerType ?? initialData?.meta?.providerType;
   const isOfficial =
@@ -722,7 +724,7 @@ export function ClaudeDesktopProviderForm({
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-6"
       >
-        {!initialData && (
+        {SHOW_PROVIDER_PRESETS && !initialData && (
           <ProviderPresetSelector
             selectedPresetId={selectedPresetId}
             presetEntries={presetEntries}
@@ -803,7 +805,7 @@ export function ClaudeDesktopProviderForm({
                     {needsModelMapping
                       ? t("claudeDesktop.modelMappingOnHint", {
                           defaultValue:
-                            "Claude Desktop 只接受 claude-sonnet-* / claude-opus-* / claude-haiku-* 三档角色 ID。开启后 CC Switch 会把这三档映射到供应商的实际模型，并在使用期间保持本地路由开启。",
+                            "Claude Desktop 只接受 claude-sonnet-* / claude-opus-* / claude-haiku-* 三档角色 ID。开启后 CentaurAI Token Manager 会把这三档映射到供应商的实际模型，并在使用期间保持本地路由开启。",
                         })
                       : t("claudeDesktop.modelMappingOffHint", {
                           defaultValue:

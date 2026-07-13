@@ -2,6 +2,7 @@
  * 预设供应商配置模板
  */
 import { ProviderCategory } from "../types";
+import { removeCommercialPromotion } from "./branding";
 
 export interface TemplateValueConfig {
   label: string;
@@ -1264,3 +1265,5 @@ export const providerPresets: ProviderPreset[] = [
     iconColor: "#FF9900",
   },
 ];
+
+providerPresets.forEach(removeCommercialPromotion);

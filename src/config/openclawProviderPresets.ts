@@ -7,6 +7,7 @@ import type {
   OpenClawProviderConfig,
   OpenClawDefaultModel,
 } from "../types";
+import { removeCommercialPromotion } from "./branding";
 import type { PresetTheme, TemplateValueConfig } from "./claudeProviderPresets";
 
 /** Suggested default model configuration for a preset */
@@ -2276,3 +2277,5 @@ export const openclawProviderPresets: OpenClawProviderPreset[] = [
     },
   },
 ];
+
+openclawProviderPresets.forEach(removeCommercialPromotion);

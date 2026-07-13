@@ -2,6 +2,7 @@
  * Codex 预设供应商配置模板
  */
 import { ProviderCategory } from "../types";
+import { removeCommercialPromotion } from "./branding";
 import type {
   CodexApiFormat,
   CodexCatalogModel,
@@ -1291,3 +1292,5 @@ base_url = "https://cc-api.pipellm.ai/v1"`,
     category: "aggregator",
   },
 ];
+
+codexProviderPresets.forEach(removeCommercialPromotion);

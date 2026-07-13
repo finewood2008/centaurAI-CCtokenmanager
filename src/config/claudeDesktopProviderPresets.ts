@@ -9,6 +9,7 @@
  * 翻译来源：src/config/claudeProviderPresets.ts（排除 OAuth 与不兼容预设）
  */
 import { ProviderCategory } from "../types";
+import { removeCommercialPromotion } from "./branding";
 import type { PresetTheme } from "./claudeProviderPresets";
 
 export type ClaudeDesktopApiFormat =
@@ -1044,3 +1045,5 @@ export const claudeDesktopProviderPresets: ClaudeDesktopProviderPreset[] = [
     iconColor: "#000000",
   },
 ];
+
+claudeDesktopProviderPresets.forEach(removeCommercialPromotion);

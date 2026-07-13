@@ -1,4 +1,5 @@
 import type { ProviderCategory } from "@/types";
+import { removeCommercialPromotion } from "./branding";
 
 /**
  * Gemini 预设供应商的视觉主题配置
@@ -420,6 +421,8 @@ export const geminiProviderPresets: GeminiProviderPreset[] = [
     category: "custom",
   },
 ];
+
+geminiProviderPresets.forEach(removeCommercialPromotion);
 
 export function getGeminiPresetByName(
   name: string,
