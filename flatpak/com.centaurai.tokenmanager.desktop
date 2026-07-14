@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=TOKEN MANAGER
+Comment=Manage API keys and endpoints for AI coding tools
+Exec=token-manager
+Icon=com.centaurai.tokenmanager
+StartupWMClass=token-manager
+Terminal=false
+Categories=Utility;Development;
+StartupNotify=true

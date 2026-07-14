@@ -1,10 +1,10 @@
-id: com.ccswitch.desktop
+id: com.centaurai.tokenmanager
 
 runtime: org.gnome.Platform
 runtime-version: '46'
 sdk: org.gnome.Sdk
 
-command: cc-switch
+command: token-manager
 
 finish-args:
   - --share=ipc
@@ -82,9 +82,9 @@ modules:
       - type: file
         path: cc-switch.deb
       - type: file
-        path: com.ccswitch.desktop.desktop
+        path: com.centaurai.tokenmanager.desktop
       - type: file
-        path: com.ccswitch.desktop.metainfo.xml
+        path: com.centaurai.tokenmanager.metainfo.xml
       - type: file
         path: ../src-tauri/icons/128x128.png
     build-commands:
@@ -93,6 +93,6 @@ modules:
       - cp -a usr/* /app/
       # Use our own desktop/metainfo/icon to align with Flatpak app id
       - rm -f /app/share/applications/*.desktop
-      - install -Dm644 com.ccswitch.desktop.desktop /app/share/applications/com.ccswitch.desktop.desktop
-      - install -Dm644 com.ccswitch.desktop.metainfo.xml /app/share/metainfo/com.ccswitch.desktop.metainfo.xml
-      - install -Dm644 128x128.png /app/share/icons/hicolor/128x128/apps/com.ccswitch.desktop.png
+      - install -Dm644 com.centaurai.tokenmanager.desktop /app/share/applications/com.centaurai.tokenmanager.desktop
+      - install -Dm644 com.centaurai.tokenmanager.metainfo.xml /app/share/metainfo/com.centaurai.tokenmanager.metainfo.xml
+      - install -Dm644 128x128.png /app/share/icons/hicolor/128x128/apps/com.centaurai.tokenmanager.png

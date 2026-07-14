@@ -1,10 +1,10 @@
 [package]
-name = "cc-switch"
+name = "token-manager"
 version = "3.16.2"
-description = "All-in-One Assistant for Claude Code, Codex & Gemini CLI"
+description = "CentaurAI desktop key and provider manager for AI coding tools"
 authors = ["Jason Young"]
 license = "MIT"
-repository = "https://github.com/farion1231/cc-switch"
+repository = "https://github.com/finewood2008/centaurAI-CCtokenmanager"
 edition = "2021"
 rust-version = "1.85.0"
 
@@ -31,7 +31,6 @@ tauri = { version = "2.8.2", features = ["tray-icon", "protocol-asset", "image-p
 tauri-plugin-log = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-process = "2"
-tauri-plugin-updater = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-store = "2"
 tauri-plugin-deep-link = "2"

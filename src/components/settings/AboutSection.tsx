@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Download,
   Copy,
@@ -10,9 +10,20 @@ import {
   AlertCircle,
   ArrowUpCircle,
   ChevronDown,
+  ChevronRight,
   Stethoscope,
+  Github,
+  Scale,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Select,
   SelectContent,
@@ -43,6 +54,10 @@ interface AboutSectionProps {
   isPortable: boolean;
 }
 
+interface ToolEnvironmentSectionProps {
+  isActive: boolean;
+}
+
 interface ToolVersion {
   name: string;
   version: string | null;
@@ -63,6 +78,10 @@ const TOOL_NAMES = [
   "openclaw",
   "hermes",
 ] as const;
+const CC_SWITCH_REPOSITORY = "https://github.com/farion1231/cc-switch";
+const TOKEN_MANAGER_LICENSE =
+  "https://github.com/finewood2008/centaurAI-CCtokenmanager/blob/main/LICENSE";
+const AUTO_UPGRADE_STORAGE_KEY = "token-manager:auto-upgrade-tools";
 type ToolName = (typeof TOOL_NAMES)[number];
 type ToolLifecycleAction = "install" | "update";
 
@@ -175,10 +194,145 @@ const TOOL_APP_IDS: Record<ToolName, AppId> = {
 };
 
 export function AboutSection({ isPortable }: AboutSectionProps) {
-  // ... (use hooks as before) ...
   const { t } = useTranslation();
   const [version, setVersion] = useState<string | null>(null);
   const [isLoadingVersion, setIsLoadingVersion] = useState(true);
+  const [isAttributionOpen, setIsAttributionOpen] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void getVersion()
+      .then((appVersion) => active && setVersion(appVersion))
+      .catch((error) => {
+        console.error("[AboutSection] Failed to load app version", error);
+        if (active) setVersion(null);
+      })
+      .finally(() => active && setIsLoadingVersion(false));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const displayVersion = version ?? t("common.unknown");
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
+      <header className="space-y-1">
+        <h3 className="text-sm font-medium">{t("common.about")}</h3>
+        <p className="text-xs text-muted-foreground">
+          {t("settings.aboutHint")}
+        </p>
+      </header>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+        className="centaur-surface space-y-5 bg-gradient-to-br from-card/95 to-secondary/35 p-6"
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <img src={appIcon} alt="TOKEN MANAGER" className="h-5 w-5" />
+              <h4 className="text-lg font-semibold text-foreground">
+                TOKEN MANAGER
+              </h4>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="gap-1.5 bg-background/80">
+                <span className="text-muted-foreground">
+                  {t("common.version")}
+                </span>
+                {isLoadingVersion ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <span className="font-medium">{`v${displayVersion}`}</span>
+                )}
+              </Badge>
+              {isPortable && (
+                <Badge variant="secondary" className="gap-1.5">
+                  <Info className="h-3 w-3" />
+                  {t("settings.portableMode")}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <Collapsible
+          open={isAttributionOpen}
+          onOpenChange={setIsAttributionOpen}
+          className="border-t border-border pt-3"
+        >
+          <CollapsibleTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-9 w-full justify-start gap-2 px-2 text-xs font-normal text-muted-foreground hover:text-foreground"
+            >
+              {isAttributionOpen ? (
+                <ChevronDown className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5" />
+              )}
+              <Scale className="h-3.5 w-3.5" />
+              {t("settings.openSourceAttributionTitle")}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="px-2 pb-2 pt-3">
+            <div className="border-l border-border pl-5">
+              <Badge variant="outline" className="bg-card/80">
+                MIT License
+              </Badge>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+                {t("settings.openSourceAttributionDescription")}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground/80">
+                {t("settings.openSourceCopyrightNotice")}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    void settingsApi.openExternal(CC_SWITCH_REPOSITORY)
+                  }
+                >
+                  <Github className="h-4 w-4" />
+                  {t("settings.viewUpstreamProject")}
+                  <ExternalLink className="h-3.5 w-3.5 opacity-60" />
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    void settingsApi.openExternal(TOKEN_MANAGER_LICENSE)
+                  }
+                >
+                  <Scale className="h-4 w-4" />
+                  {t("settings.viewMitLicense")}
+                  <ExternalLink className="h-3.5 w-3.5 opacity-60" />
+                </Button>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </motion.div>
+    </motion.section>
+  );
+}
+
+export function ToolEnvironmentSection({
+  isActive,
+}: ToolEnvironmentSectionProps) {
+  const { t } = useTranslation();
   const [toolVersions, setToolVersions] = useState<ToolVersion[]>([]);
   const [isLoadingTools, setIsLoadingTools] = useState(true);
   const [toolActions, setToolActions] = useState<
@@ -188,6 +342,13 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
     null,
   );
   const [showInstallCommands, setShowInstallCommands] = useState(false);
+  const [autoUpgradeEnabled, setAutoUpgradeEnabled] = useState(() =>
+    typeof window === "undefined"
+      ? false
+      : window.localStorage.getItem(AUTO_UPGRADE_STORAGE_KEY) === "true",
+  );
+  const hasLoadedRef = useRef(false);
+  const autoUpgradeAttemptRef = useRef("");
 
   const [wslShellByTool, setWslShellByTool] = useState<
     Record<string, WslShellPreference>
@@ -316,38 +477,12 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
   };
 
   useEffect(() => {
-    let active = true;
-    const load = async () => {
-      try {
-        const [appVersion] = await Promise.all([
-          getVersion(),
-          loadAllToolVersions(),
-        ]);
-
-        if (active) {
-          setVersion(appVersion);
-        }
-      } catch (error) {
-        console.error("[AboutSection] Failed to load info", error);
-        if (active) {
-          setVersion(null);
-        }
-      } finally {
-        if (active) {
-          setIsLoadingVersion(false);
-        }
-      }
-    };
-
-    void load();
-    return () => {
-      active = false;
-    };
-    // Mount-only: loadAllToolVersions is intentionally excluded to avoid
-    // re-fetching all tools whenever wslShellByTool changes. Single-tool
-    // refreshes are handled by refreshToolVersions in the shell/flag handlers.
+    if (!isActive || hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+    void loadAllToolVersions();
+    // Load once on the first visit. Shell changes refresh their individual tool.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isActive]);
 
   const handleCopyInstallCommands = useCallback(async () => {
     try {
@@ -650,8 +785,6 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
 
   const handleCancelUpgrade = useCallback(() => setPendingUpgrade(null), []);
 
-  const displayVersion = version ?? t("common.unknown");
-
   // 任一安装/升级进行中（批量或单工具）即视为忙碌：用于禁用所有操作按钮，
   // 避免并发触发多个 npm/pip 全局写入造成冲突。
   // preflightTools 覆盖升级前的 probe 阶段——那段在 executeRun 之前、toolActions
@@ -661,6 +794,37 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
     Object.keys(toolActions).length > 0 ||
     preflightTools.size > 0;
 
+  const handleAutoUpgradeChange = useCallback((enabled: boolean) => {
+    setAutoUpgradeEnabled(enabled);
+    window.localStorage.setItem(AUTO_UPGRADE_STORAGE_KEY, String(enabled));
+    autoUpgradeAttemptRef.current = "";
+  }, []);
+
+  const updatableSignature = updatableToolNames.join(",");
+  useEffect(() => {
+    if (
+      !isActive ||
+      !autoUpgradeEnabled ||
+      isLoadingTools ||
+      isAnyBusy ||
+      updatableToolNames.length === 0 ||
+      autoUpgradeAttemptRef.current === updatableSignature
+    ) {
+      return;
+    }
+
+    autoUpgradeAttemptRef.current = updatableSignature;
+    void handleRunToolAction(updatableToolNames, "update");
+  }, [
+    autoUpgradeEnabled,
+    handleRunToolAction,
+    isActive,
+    isAnyBusy,
+    isLoadingTools,
+    updatableSignature,
+    updatableToolNames,
+  ]);
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 10 }}
@@ -669,55 +833,31 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
       className="space-y-6"
     >
       <header className="space-y-1">
-        <h3 className="text-sm font-medium">{t("common.about")}</h3>
+        <h3 className="text-sm font-medium">{t("settings.localEnvCheck")}</h3>
         <p className="text-xs text-muted-foreground">
-          {t("settings.aboutHint")}
+          {t("settings.localEnvCheckDescription")}
         </p>
       </header>
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
-        className="rounded-xl border border-border bg-gradient-to-br from-card/80 to-card/40 p-6 space-y-5 shadow-sm"
-      >
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <img
-                src={appIcon}
-                alt="CentaurAI Token Manager"
-                className="h-5 w-5"
-              />
-              <h4 className="text-lg font-semibold text-foreground">
-                CentaurAI Token Manager
-              </h4>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="gap-1.5 bg-background/80">
-                <span className="text-muted-foreground">
-                  {t("common.version")}
-                </span>
-                {isLoadingVersion ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <span className="font-medium">{`v${displayVersion}`}</span>
-                )}
-              </Badge>
-              {isPortable && (
-                <Badge variant="secondary" className="gap-1.5">
-                  <Info className="h-3 w-3" />
-                  {t("settings.portableMode")}
-                </Badge>
-              )}
-            </div>
-          </div>
+      <div className="centaur-surface flex items-center justify-between gap-4 p-4">
+        <div className="space-y-1">
+          <Label htmlFor="auto-upgrade-tools">
+            {t("settings.autoUpgradeTools")}
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            {t("settings.autoUpgradeToolsDescription")}
+          </p>
         </div>
-      </motion.div>
+        <Switch
+          id="auto-upgrade-tools"
+          checked={autoUpgradeEnabled}
+          onCheckedChange={handleAutoUpgradeChange}
+          aria-label={t("settings.autoUpgradeTools")}
+        />
+      </div>
 
       <div className="space-y-3">
-        <div className="flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-sm font-medium">{t("settings.localEnvCheck")}</h3>
+        <div className="flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-end">
           <div className="flex flex-wrap items-center gap-2">
             <Button
               size="sm"

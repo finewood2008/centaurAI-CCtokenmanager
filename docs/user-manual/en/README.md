@@ -1,11 +1,11 @@
-# CC Switch User Manual
+# TOKEN MANAGER User Manual
 
 > All-in-One Assistant for Claude Code / Claude Desktop / Codex / Gemini CLI / OpenCode / OpenClaw / Hermes
 
 ## Table of Contents
 
 ```
-CC Switch User Manual
+TOKEN MANAGER User Manual
 │
 ├── 1. Getting Started
 │   ├── 1.1 Introduction
@@ -47,52 +47,52 @@ CC Switch User Manual
 
 ### 1. Getting Started
 
-| File | Description |
-|------|-------------|
-| [1.1-introduction.md](./1-getting-started/1.1-introduction.md) | Introduction, core features, supported platforms |
-| [1.2-installation.md](./1-getting-started/1.2-installation.md) | Windows/macOS/Linux installation guide |
-| [1.3-interface.md](./1-getting-started/1.3-interface.md) | Interface layout, navigation bar, provider cards |
-| [1.4-quickstart.md](./1-getting-started/1.4-quickstart.md) | 5-minute quick start tutorial |
-| [1.5-settings.md](./1-getting-started/1.5-settings.md) | Language, theme, directories, cloud sync settings |
+| File                                                           | Description                                       |
+| -------------------------------------------------------------- | ------------------------------------------------- |
+| [1.1-introduction.md](./1-getting-started/1.1-introduction.md) | Introduction, core features, supported platforms  |
+| [1.2-installation.md](./1-getting-started/1.2-installation.md) | Windows/macOS/Linux installation guide            |
+| [1.3-interface.md](./1-getting-started/1.3-interface.md)       | Interface layout, navigation bar, provider cards  |
+| [1.4-quickstart.md](./1-getting-started/1.4-quickstart.md)     | 5-minute quick start tutorial                     |
+| [1.5-settings.md](./1-getting-started/1.5-settings.md)         | Language, theme, directories, cloud sync settings |
 
 ### 2. Provider Management
 
-| File | Description |
-|------|-------------|
-| [2.1-add.md](./2-providers/2.1-add.md) | Using presets, custom configuration, universal providers |
-| [2.2-switch.md](./2-providers/2.2-switch.md) | Main UI switching, tray switching, activation methods |
-| [2.3-edit.md](./2-providers/2.3-edit.md) | Edit configuration, modify API Key, backfill mechanism |
-| [2.4-sort-duplicate.md](./2-providers/2.4-sort-duplicate.md) | Drag-to-reorder, duplicate provider, delete |
-| [2.5-usage-query.md](./2-providers/2.5-usage-query.md) | Usage query, remaining balance, multi-plan display |
+| File                                                         | Description                                                          |
+| ------------------------------------------------------------ | -------------------------------------------------------------------- |
+| [2.1-add.md](./2-providers/2.1-add.md)                       | Using presets, custom configuration, universal providers             |
+| [2.2-switch.md](./2-providers/2.2-switch.md)                 | Main UI switching, tray switching, activation methods                |
+| [2.3-edit.md](./2-providers/2.3-edit.md)                     | Edit configuration, modify API Key, backfill mechanism               |
+| [2.4-sort-duplicate.md](./2-providers/2.4-sort-duplicate.md) | Drag-to-reorder, duplicate provider, delete                          |
+| [2.5-usage-query.md](./2-providers/2.5-usage-query.md)       | Usage query, remaining balance, multi-plan display                   |
 | [2.6-claude-desktop.md](./2-providers/2.6-claude-desktop.md) | Claude Desktop third-party providers, direct mode, and model mapping |
 
 ### 3. Extensions
 
-| File | Description |
-|------|-------------|
-| [3.1-mcp.md](./3-extensions/3.1-mcp.md) | MCP protocol, add servers, app binding |
-| [3.2-prompts.md](./3-extensions/3.2-prompts.md) | Create presets, activate/switch, smart backfill |
-| [3.3-skills.md](./3-extensions/3.3-skills.md) | Discover skills, install/uninstall, repository management |
-| [3.4-sessions.md](./3-extensions/3.4-sessions.md) | Session Manager: browse, search, resume, delete sessions |
-| [3.5-workspace.md](./3-extensions/3.5-workspace.md) | Workspace files and daily memory (OpenClaw) |
+| File                                                | Description                                               |
+| --------------------------------------------------- | --------------------------------------------------------- |
+| [3.1-mcp.md](./3-extensions/3.1-mcp.md)             | MCP protocol, add servers, app binding                    |
+| [3.2-prompts.md](./3-extensions/3.2-prompts.md)     | Create presets, activate/switch, smart backfill           |
+| [3.3-skills.md](./3-extensions/3.3-skills.md)       | Discover skills, install/uninstall, repository management |
+| [3.4-sessions.md](./3-extensions/3.4-sessions.md)   | Session Manager: browse, search, resume, delete sessions  |
+| [3.5-workspace.md](./3-extensions/3.5-workspace.md) | Workspace files and daily memory (OpenClaw)               |
 
 ### 4. Proxy & High Availability
 
-| File | Description |
-|------|-------------|
-| [4.1-service.md](./4-proxy/4.1-service.md) | Start proxy, configuration, running status |
-| [4.2-routing.md](./4-proxy/4.2-routing.md) | App routing, configuration changes, status indicators |
-| [4.3-failover.md](./4-proxy/4.3-failover.md) | Failover queue, circuit breaker, health status |
-| [4.4-usage.md](./4-proxy/4.4-usage.md) | Usage statistics, trend charts, pricing configuration |
-| [4.5-model-test.md](./4-proxy/4.5-model-test.md) | Model test, health check, latency testing |
+| File                                             | Description                                           |
+| ------------------------------------------------ | ----------------------------------------------------- |
+| [4.1-service.md](./4-proxy/4.1-service.md)       | Start proxy, configuration, running status            |
+| [4.2-routing.md](./4-proxy/4.2-routing.md)       | App routing, configuration changes, status indicators |
+| [4.3-failover.md](./4-proxy/4.3-failover.md)     | Failover queue, circuit breaker, health status        |
+| [4.4-usage.md](./4-proxy/4.4-usage.md)           | Usage statistics, trend charts, pricing configuration |
+| [4.5-model-test.md](./4-proxy/4.5-model-test.md) | Model test, health check, latency testing             |
 
 ### 5. FAQ
 
-| File | Description |
-|------|-------------|
-| [5.1-config-files.md](./5-faq/5.1-config-files.md) | CC Switch storage, CLI configuration file formats |
-| [5.2-questions.md](./5-faq/5.2-questions.md) | Frequently asked questions |
-| [5.3-deeplink.md](./5-faq/5.3-deeplink.md) | Deep link protocol, generation and usage |
+| File                                               | Description                                            |
+| -------------------------------------------------- | ------------------------------------------------------ |
+| [5.1-config-files.md](./5-faq/5.1-config-files.md) | TOKEN MANAGER storage, CLI configuration file formats      |
+| [5.2-questions.md](./5-faq/5.2-questions.md)       | Frequently asked questions                             |
+| [5.3-deeplink.md](./5-faq/5.3-deeplink.md)         | Deep link protocol, generation and usage               |
 | [5.4-env-conflict.md](./5-faq/5.4-env-conflict.md) | Environment variable conflict detection and resolution |
 
 ## Quick Links
@@ -108,13 +108,13 @@ CC Switch User Manual
 
 - Documentation version: v3.16.0
 - Last updated: 2026-05-29
-- Applicable to CC Switch v3.16.0+
+- Applicable to TOKEN MANAGER v3.16.0+
 
 ### v3.16.0 Highlights
 
 - **Codex Chat Completions routing**: route Chat-only providers such as DeepSeek, Kimi, GLM, and MiniMax through Codex. See [2.1 Add Provider](./2-providers/2.1-add.md)
 - **Managed CLI tool lifecycle**: install, update, update all, and diagnose Claude / Codex / Gemini / OpenCode / OpenClaw / Hermes from Settings / About. See [1.5 Personalization](./1-getting-started/1.5-settings.md)
-- **Provider and model refresh**: new partner presets, refreshed default models and pricing, Claude Opus 4.8 defaults, and GPT 5.5 defaults where applicable
+- **Direct provider setup**: configure your own API keys, endpoints, models, and pricing without a promoted-provider directory
 - **Routing support badges**: Claude Code / Codex provider cards indicate whether a provider can be served through Local Routing
 - **Codex OAuth live model discovery**: ChatGPT Codex providers fetch available models from the ChatGPT backend on demand
 - **Filter-driven Usage Hero**: shows cache-normalized real total tokens and cache hit rate, updating with date / provider / model filters — see [4.4 Usage Statistics](./4-proxy/4.4-usage.md)

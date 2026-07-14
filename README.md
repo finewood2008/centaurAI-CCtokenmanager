@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="src-tauri/icons/128x128.png" alt="CentaurAI Token Manager" width="96" />
+<img src="src-tauri/icons/128x128.png" alt="TOKEN MANAGER" width="96" />
 
-# CentaurAI Token Manager
+# TOKEN MANAGER
 
 CentaurAI-branded desktop key and provider manager for AI coding tools.
 
@@ -13,7 +13,7 @@ CentaurAI-branded desktop key and provider manager for AI coding tools.
 
 ## Overview
 
-CentaurAI Token Manager is the CentaurAI distribution of CC Switch. It provides one desktop interface for managing credentials and endpoint configuration used by Claude Code, Claude Desktop, Codex, Gemini CLI, OpenCode, OpenClaw, and Hermes Agent.
+TOKEN MANAGER is the CentaurAI distribution of CC Switch. It provides one desktop interface for managing credentials and endpoint configuration used by Claude Code, Claude Desktop, Codex, Gemini CLI, OpenCode, OpenClaw, and Hermes Agent.
 
 This distribution removes upstream advertising, sponsor badges, referral links, recommended-provider placements, and upstream automatic-update entry points. The preset-provider directory is disabled: users configure their own providers and keys directly.
 

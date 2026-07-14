@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "CentaurAI Token Manager",
+    "title": "TOKEN MANAGER",
     "description": "Claude Code / Codex / Gemini CLI 全方位輔助工具"
   },
   "common": {
@@ -43,9 +43,9 @@
     "notSet": "未設定"
   },
   "firstRunNotice": {
-    "title": "歡迎使用 CentaurAI Token Manager",
-    "bodyDefault": "CentaurAI Token Manager 可以協助您在 Claude Code / Codex / Gemini CLI 的多個供應商之間一鍵切換。如果您之前已經設定過這些工具，CentaurAI Token Manager 會自動將現有設定儲存為名為 default 的供應商，確保您的設定不會遺失。",
-    "bodyOfficial": "清單中還預設了「官方 (Official)」供應商，隨時點擊即可切換回官方預設設定。切換前 CentaurAI Token Manager 會自動將目前設定備份回 default，可以放心來回切換。這就是 CentaurAI Token Manager 的運作方式。",
+    "title": "歡迎使用 TOKEN MANAGER",
+    "bodyDefault": "TOKEN MANAGER 可以協助您在 Claude Code / Codex / Gemini CLI 的多個供應商之間一鍵切換。如果您之前已經設定過這些工具，TOKEN MANAGER 會自動將現有設定儲存為名為 default 的供應商，確保您的設定不會遺失。",
+    "bodyOfficial": "清單中還預設了「官方 (Official)」供應商，隨時點擊即可切換回官方預設設定。切換前 TOKEN MANAGER 會自動將目前設定備份回 default，可以放心來回切換。這就是 TOKEN MANAGER 的運作方式。",
     "confirm": "我了解了"
   },
   "apiKeyInput": {
@@ -101,6 +101,7 @@
     "tabProvider": "供應商",
     "tabUniversal": "通用供應商",
     "noProviders": "尚未新增任何供應商",
+    "configCount": "{{count}} 個設定",
     "noProvidersDescription": "如果您已有設定，請點擊「匯入目前設定」，所有資料將安全儲存在 default 供應商中",
     "noProvidersDescriptionSnippet": "除 API Key 和請求位址外的資料（如外掛程式設定）會被儲存至通用設定片段，用於在不同供應商之間共用",
     "importCurrent": "匯入目前設定",
@@ -187,7 +188,7 @@
     "modeProxy": "需要路由",
     "modelMappingToggle": "需要模型對應",
     "modelMappingOffHint": "僅當供應商直接接受 Claude Desktop 可識別的三檔角色 ID（claude-sonnet-* / claude-opus-* / claude-haiku-*）時才適用直連；其他模型名（含 claude-3-5-sonnet-… 等舊式 ID）請開啟此開關走對應。",
-    "modelMappingOnHint": "Claude Desktop 只接受 claude-sonnet-* / claude-opus-* / claude-haiku-* 三檔角色 ID。開啟後 CentaurAI Token Manager 會把這三檔對應到供應商的實際模型，並在使用期間保持本地路由開啟。",
+    "modelMappingOnHint": "Claude Desktop 只接受 claude-sonnet-* / claude-opus-* / claude-haiku-* 三檔角色 ID。開啟後 TOKEN MANAGER 會把這三檔對應到供應商的實際模型，並在使用期間保持本地路由開啟。",
     "routeMapTitle": "模型對應",
     "routeMapHint": "為 Sonnet、Opus、Haiku 三檔分別填寫實際請求模型；選單顯示名稱可寫 DeepSeek、Kimi 等品牌名。留空的檔會自動沿用 Sonnet（或第一個已填檔）的模型，確保子 agent 呼叫的 Haiku 始終可用。",
     "routeModelLabel": "模型角色",
@@ -226,7 +227,7 @@
     "switchSuccess": "切換成功！",
     "codexRestartRequired": "切換成功，請重新啟動客戶端以套用",
     "claudeDesktopRestartRequired": "切換成功，重新啟動 Claude Desktop 後生效",
-    "claudeDesktopProxyRestartRequired": "切換成功，請保持 CentaurAI Token Manager 執行，並重新啟動 Claude Desktop 後生效",
+    "claudeDesktopProxyRestartRequired": "切換成功，請保持 TOKEN MANAGER 執行，並重新啟動 Claude Desktop 後生效",
     "addToConfigSuccess": "已新增至設定",
     "removeFromConfigSuccess": "已從設定移除",
     "switchFailedTitle": "切換失敗",
@@ -267,7 +268,7 @@
     "deleteProvider": "刪除供應商",
     "deleteProviderMessage": "確定要刪除供應商「{{name}}」嗎？此操作無法復原。",
     "removeProvider": "移除供應商",
-    "removeProviderMessage": "確定要從設定中移除供應商「{{name}}」嗎？\n\n移除後該供應商將不再生效，但設定資料會保留在 CentaurAI Token Manager 中，您可以隨時重新新增。",
+    "removeProviderMessage": "確定要從設定中移除供應商「{{name}}」嗎？\n\n移除後該供應商將不再生效，但設定資料會保留在 TOKEN MANAGER 中，您可以隨時重新新增。",
     "proxy": {
       "title": "啟用本地路由服務",
       "message": "本地路由是一項進階功能，啟用前請確保您已了解其運作原理。\n\n建議先查閱相關文件或諮詢您的供應商，以取得正確的設定方式。",
@@ -306,6 +307,7 @@
     "tabAuth": "驗證",
     "tabAdvanced": "進階",
     "tabProxy": "路由",
+    "tabEnvironment": "環境升級",
     "authCenter": {
       "title": "OAuth 驗證中心",
       "description": "在 Claude Code 中使用您的其他訂閱，請注意合規風險。",
@@ -342,7 +344,7 @@
       },
       "globalProxy": {
         "title": "全域出站代理伺服器",
-        "description": "設定 CentaurAI Token Manager 存取外部 API 時使用的代理伺服器"
+        "description": "設定 TOKEN MANAGER 存取外部 API 時使用的代理伺服器"
       },
       "data": {
         "title": "資料管理",
@@ -416,7 +418,7 @@
     "themeDark": "深色",
     "themeSystem": "跟隨系統",
     "importExport": "SQL 匯入匯出",
-    "importExportHint": "匯入/匯出資料庫 SQL 備份（僅支援匯入由 CentaurAI Token Manager 匯出的備份），便於備份或遷移。",
+    "importExportHint": "匯入/匯出資料庫 SQL 備份（僅支援匯入由 TOKEN MANAGER 匯出的備份），便於備份或遷移。",
     "exportConfig": "匯出 SQL 備份",
     "selectConfigFile": "選擇 SQL 檔案",
     "noFileSelected": "尚未選擇設定檔。",
@@ -654,7 +656,7 @@
     "windowBehavior": "視窗行為",
     "windowBehaviorHint": "設定視窗最小化與 Claude 外掛程式連動策略。",
     "launchOnStartup": "開機自動啟動",
-    "launchOnStartupDescription": "隨系統啟動自動執行 CentaurAI Token Manager",
+    "launchOnStartupDescription": "隨系統啟動自動執行 TOKEN MANAGER",
     "silentStartup": "靜默啟動",
     "silentStartupDescription": "程式啟動時不顯示主視窗，僅在系統匣執行",
     "autoLaunchFailed": "設定開機自動啟動失敗",
@@ -679,10 +681,10 @@
     },
     "skillStorage": {
       "title": "Skills 儲存位置",
-      "description": "選擇 CentaurAI Token Manager 存放 Skills 主副本的目錄",
-      "ccSwitch": "CentaurAI Token Manager",
+      "description": "選擇 TOKEN MANAGER 存放 Skills 主副本的目錄",
+      "ccSwitch": "TOKEN MANAGER",
       "unified": "~/.agents/skills",
-      "ccSwitchHint": "技能儲存在 ~/.cc-switch/skills/，由 CentaurAI Token Manager 統一管理並同步至各應用程式。",
+      "ccSwitchHint": "技能儲存在 ~/.cc-switch/skills/，由 TOKEN MANAGER 統一管理並同步至各應用程式。",
       "unifiedHint": "技能儲存在 ~/.agents/skills/，遵循 Agent Skills 開放標準。相容的工具（Claude Code、Codex、Gemini CLI 等）可直接發現此目錄中的技能。",
       "confirmTitle": "遷移技能儲存位置",
       "confirmMessage": "將移動 {{count}} 個技能至新位置，是否繼續？",
@@ -728,8 +730,8 @@
     },
     "configDirectoryOverride": "設定目錄覆寫（進階）",
     "configDirectoryDescription": "在 WSL 等環境使用 Claude Code 或 Codex 的時候，可手動指定為 WSL 裡的設定目錄，供應商資料與主環境保持一致。",
-    "appConfigDir": "CentaurAI Token Manager 設定目錄",
-    "appConfigDirDescription": "自訂 CentaurAI Token Manager 的設定儲存位置（指定至雲端同步資料夾即可雲端同步設定）",
+    "appConfigDir": "TOKEN MANAGER 設定目錄",
+    "appConfigDirDescription": "自訂 TOKEN MANAGER 的設定儲存位置（指定至雲端同步資料夾即可雲端同步設定）",
     "browsePlaceholderApp": "例如：C:\\Users\\Administrator\\.cc-switch",
     "claudeConfigDir": "Claude Code 設定目錄",
     "claudeConfigDirDescription": "覆寫 Claude 設定目錄 (settings.json)，同時會在同級存放 Claude MCP 的 claude.json。",
@@ -756,7 +758,12 @@
     "updating": "更新中...",
     "checking": "檢查中...",
     "upToDate": "已是最新",
-    "aboutHint": "檢視版本資訊與更新狀態。",
+    "aboutHint": "檢視應用程式版本與執行環境資訊。",
+    "openSourceAttributionTitle": "基於 CC Switch 二次開發",
+    "openSourceAttributionDescription": "TOKEN MANAGER 是基於開源專案 CC Switch 進行二次開發的 CentaurAI 客製發行版。CC Switch 與本發行版均遵循 MIT License。",
+    "openSourceCopyrightNotice": "我們依照授權條款保留原作者著作權聲明與 MIT 授權聲明。",
+    "viewUpstreamProject": "檢視 CC Switch 原專案",
+    "viewMitLicense": "檢視 MIT 授權",
     "portableMode": "目前為可攜版，更新需手動下載。",
     "updateAvailable": "檢測到新版本：{{version}}",
     "updateBadge": "有更新可用",
@@ -771,6 +778,9 @@
     "oneClickInstall": "一鍵安裝",
     "oneClickInstallHint": "安裝 Claude Code / Codex / Gemini CLI / OpenCode",
     "localEnvCheck": "本地環境檢查",
+    "localEnvCheckDescription": "檢查並管理本機 AI 命令列工具的安裝狀態與版本。",
+    "autoUpgradeTools": "自動升級命令列工具",
+    "autoUpgradeToolsDescription": "進入此頁面檢查到新版本時自動升級，預設關閉。",
     "envBadge": {
       "wsl": "WSL",
       "windows": "Win",
@@ -784,7 +794,7 @@
     "importFailedError": "匯入設定失敗：{{message}}",
     "exportFailedError": "匯出設定失敗：",
     "restartRequired": "需要重新啟動應用程式",
-    "restartRequiredMessage": "修改 CentaurAI Token Manager 設定目錄後需要重新啟動應用程式才能生效，是否立即重新啟動？",
+    "restartRequiredMessage": "修改 TOKEN MANAGER 設定目錄後需要重新啟動應用程式才能生效，是否立即重新啟動？",
     "restartNow": "立即重新啟動",
     "restartLater": "稍後重新啟動",
     "restartFailed": "應用程式重新啟動失敗，請手動關閉後重新開啟。",
@@ -1536,7 +1546,7 @@
       "deleteConfirm": "確定要刪除伺服器 \"{{id}}\" 嗎？此操作無法復原。",
       "noServers": "暫無伺服器",
       "enabledApps": "啟用的應用程式",
-      "noImportFound": "未發現需要匯入的 MCP 伺服器。所有伺服器已在 CentaurAI Token Manager 統一管理中。",
+      "noImportFound": "未發現需要匯入的 MCP 伺服器。所有伺服器已在 TOKEN MANAGER 統一管理中。",
       "importSuccess": "成功匯入 {{count}} 個 MCP 伺服器",
       "apps": {
         "claude": "Claude",
@@ -2081,10 +2091,10 @@
     "noInstalledDescription": "從儲存庫發現並安裝技能，或匯入已有的技能",
     "discover": "發現技能",
     "import": "匯入已有",
-    "importDescription": "選擇要匯入至 CentaurAI Token Manager 統一管理的技能",
+    "importDescription": "選擇要匯入至 TOKEN MANAGER 統一管理的技能",
     "importSuccess": "成功匯入 {{count}} 個技能",
     "importSelected": "匯入已選 ({{count}})",
-    "noUnmanagedFound": "未發現需要匯入的技能。所有技能已在 CentaurAI Token Manager 統一管理中。",
+    "noUnmanagedFound": "未發現需要匯入的技能。所有技能已在 TOKEN MANAGER 統一管理中。",
     "foundIn": "發現於",
     "local": "本地",
     "uninstallConfirm": "確定要解除安裝技能 \"{{name}}\" 嗎？這將從所有應用程式中移除該技能，並在刪除前自動建立本地備份。",
@@ -2128,7 +2138,7 @@
   },
   "deeplink": {
     "confirmImport": "確認匯入供應商設定",
-    "confirmImportDescription": "以下設定將匯入至 CentaurAI Token Manager",
+    "confirmImportDescription": "以下設定將匯入至 TOKEN MANAGER",
     "importPrompt": "匯入提示詞",
     "importPromptDescription": "請確認是否匯入此系統提示詞",
     "importMcp": "匯入 MCP Servers",

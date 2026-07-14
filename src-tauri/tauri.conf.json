@@ -1,19 +1,19 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "CentaurAI Token Manager",
+  "productName": "TOKEN MANAGER",
   "version": "3.16.2",
-  "identifier": "com.ccswitch.desktop",
+  "identifier": "com.centaurai.tokenmanager",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:3000",
-    "beforeDevCommand": "pnpm run dev:renderer",
-    "beforeBuildCommand": "pnpm run build:renderer"
+    "beforeDevCommand": "corepack pnpm@10 run dev:renderer",
+    "beforeBuildCommand": "corepack pnpm@10 run build:renderer"
   },
   "app": {
     "windows": [
       {
         "label": "main",
-        "title": "",
+        "title": "TOKEN MANAGER",
         "titleBarStyle": "Overlay",
         "width": 1000,
         "height": 650,

@@ -297,14 +297,13 @@ export function ProviderCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-border p-4 transition-all duration-300",
-        "bg-card text-card-foreground group",
+        "centaur-lift group relative overflow-hidden rounded-[18px] border border-border bg-card/95 p-5 text-card-foreground",
         isAutoFailoverEnabled || isProxyTakeover
           ? "hover:border-emerald-500/50"
-          : "hover:border-border-active",
+          : "hover:border-primary/40",
         shouldUseGreen &&
           "border-emerald-500/60 shadow-sm shadow-emerald-500/10",
-        shouldUseBlue && "border-blue-500/60 shadow-sm shadow-blue-500/10",
+        shouldUseBlue && "border-primary/55 shadow-sm shadow-primary/10",
         !(isActiveProvider || hasPersistentConfigHighlight) &&
           "hover:shadow-sm",
         dragHandleProps?.isDragging &&
@@ -313,13 +312,21 @@ export function ProviderCard({
     >
       <div
         className={cn(
-          "absolute inset-0 bg-gradient-to-r to-transparent transition-opacity duration-500 pointer-events-none",
+          "pointer-events-none absolute inset-0 bg-gradient-to-r to-transparent transition-opacity duration-500",
           shouldUseGreen && "from-emerald-500/10",
-          shouldUseBlue && "from-blue-500/10",
+          shouldUseBlue && "from-primary/10",
           !shouldUseGreen && !shouldUseBlue && "from-primary/10",
           isActiveProvider || hasPersistentConfigHighlight
             ? "opacity-100"
             : "opacity-0",
+        )}
+      />
+      <div
+        className={cn(
+          "centaur-rail pointer-events-none absolute inset-x-0 top-0 h-[3px] transition-opacity duration-300",
+          isActiveProvider || hasPersistentConfigHighlight
+            ? "opacity-100"
+            : "opacity-0 group-hover:opacity-60",
         )}
       />
       <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -338,18 +345,18 @@ export function ProviderCard({
             <GripVertical className="h-4 w-4" />
           </button>
 
-          <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center border border-border group-hover:scale-105 transition-transform duration-300">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary/65 shadow-sm transition-transform duration-300 group-hover:scale-105">
             <ProviderIcon
               icon={provider.icon}
               name={provider.name}
               color={provider.iconColor}
-              size={20}
+              size={22}
             />
           </div>
 
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2 min-h-7">
-              <h3 className="text-base font-semibold leading-none">
+              <h3 className="centaur-title text-base leading-none">
                 {provider.name}
               </h3>
 
@@ -444,7 +451,7 @@ export function ProviderCard({
                 className={cn(
                   "inline-flex items-center text-sm max-w-[280px]",
                   isClickableUrl
-                    ? "text-blue-500 transition-colors hover:underline dark:text-blue-400 cursor-pointer"
+                    ? "cursor-pointer text-primary transition-colors hover:underline"
                     : "text-muted-foreground cursor-default",
                 )}
                 title={displayUrl}

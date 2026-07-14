@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "CentaurAI Token Manager",
+    "title": "TOKEN MANAGER",
     "description": "All-in-One Assistant for Claude Code, Codex & Gemini CLI"
   },
   "common": {
@@ -43,9 +43,9 @@
     "notSet": "Not Set"
   },
   "firstRunNotice": {
-    "title": "Welcome to CentaurAI Token Manager",
-    "bodyDefault": "CentaurAI Token Manager lets you switch between multiple Claude Code / Codex / Gemini CLI providers with a single click. If you already had these tools configured, CentaurAI Token Manager has saved your existing setup as a provider named “default” so none of your previous configuration is lost.",
-    "bodyOfficial": "An “Official” preset is also included in the list — click it any time you want to switch back to the official default. CentaurAI Token Manager automatically backs up your current config to “default” before switching, so you can move back and forth freely. That's how CentaurAI Token Manager works 😊",
+    "title": "Welcome to TOKEN MANAGER",
+    "bodyDefault": "TOKEN MANAGER lets you switch between multiple Claude Code / Codex / Gemini CLI providers with a single click. If you already had these tools configured, TOKEN MANAGER has saved your existing setup as a provider named “default” so none of your previous configuration is lost.",
+    "bodyOfficial": "An “Official” preset is also included in the list — click it any time you want to switch back to the official default. TOKEN MANAGER automatically backs up your current config to “default” before switching, so you can move back and forth freely. That's how TOKEN MANAGER works 😊",
     "confirm": "Got it"
   },
   "apiKeyInput": {
@@ -101,6 +101,7 @@
     "tabProvider": "Provider",
     "tabUniversal": "Universal",
     "noProviders": "No providers added yet",
+    "configCount": "{{count}} configurations",
     "noProvidersDescription": "If you already have a config, click \"Import Current Config\" — all data will be safely saved in a default provider",
     "noProvidersDescriptionSnippet": "Settings other than API key and endpoint (e.g. plugins) will be saved to a common config snippet for sharing across providers",
     "importCurrent": "Import Current Config",
@@ -187,7 +188,7 @@
     "modeProxy": "Requires routing",
     "modelMappingToggle": "Needs model mapping",
     "modelMappingOffHint": "Direct mode works only when the provider accepts Claude Desktop's three role IDs (claude-sonnet-* / claude-opus-* / claude-haiku-*); for any other model name (including legacy IDs like claude-3-5-sonnet-…), enable this switch to use mapping.",
-    "modelMappingOnHint": "Claude Desktop only accepts the three role IDs claude-sonnet-* / claude-opus-* / claude-haiku-*. When enabled, CentaurAI Token Manager maps these three roles to your provider's actual models and keeps local routing running while in use.",
+    "modelMappingOnHint": "Claude Desktop only accepts the three role IDs claude-sonnet-* / claude-opus-* / claude-haiku-*. When enabled, TOKEN MANAGER maps these three roles to your provider's actual models and keeps local routing running while in use.",
     "routeMapTitle": "Model mapping",
     "routeMapHint": "Fill in the actual request model for each of the Sonnet, Opus, and Haiku tiers. Use the menu display name for branded models such as DeepSeek or Kimi. Any tier left blank inherits the Sonnet tier's model (or the first tier you filled in), so the Haiku that sub-agents call is always available.",
     "routeModelLabel": "Model role",
@@ -226,7 +227,7 @@
     "switchSuccess": "Switch successful!",
     "codexRestartRequired": "Switched successfully. Restart the client to apply changes.",
     "claudeDesktopRestartRequired": "Switched successfully. Restart Claude Desktop to apply changes.",
-    "claudeDesktopProxyRestartRequired": "Switched successfully. Keep CentaurAI Token Manager running and restart Claude Desktop to apply changes.",
+    "claudeDesktopProxyRestartRequired": "Switched successfully. Keep TOKEN MANAGER running and restart Claude Desktop to apply changes.",
     "addToConfigSuccess": "Added to config",
     "removeFromConfigSuccess": "Removed from config",
     "switchFailedTitle": "Switch failed",
@@ -267,7 +268,7 @@
     "deleteProvider": "Delete Provider",
     "deleteProviderMessage": "Are you sure you want to delete provider \"{{name}}\"? This action cannot be undone.",
     "removeProvider": "Remove Provider",
-    "removeProviderMessage": "Are you sure you want to remove provider \"{{name}}\" from the configuration?\n\nAfter removal, this provider will no longer be active, but the configuration data will be retained in CentaurAI Token Manager. You can re-add it at any time.",
+    "removeProviderMessage": "Are you sure you want to remove provider \"{{name}}\" from the configuration?\n\nAfter removal, this provider will no longer be active, but the configuration data will be retained in TOKEN MANAGER. You can re-add it at any time.",
     "proxy": {
       "title": "Enable Local Routing",
       "message": "Local routing is an advanced feature. Please make sure you understand how it works before enabling.\n\nWe recommend consulting the relevant documentation or your provider for proper configuration.",
@@ -306,6 +307,7 @@
     "tabAuth": "Auth",
     "tabAdvanced": "Advanced",
     "tabProxy": "Routing",
+    "tabEnvironment": "Tool Updates",
     "authCenter": {
       "title": "OAuth Authentication Center",
       "description": "Use your other subscriptions in Claude Code — please be mindful of compliance risks.",
@@ -342,7 +344,7 @@
       },
       "globalProxy": {
         "title": "Global Outbound Proxy",
-        "description": "Configure proxy for CentaurAI Token Manager to access external APIs"
+        "description": "Configure proxy for TOKEN MANAGER to access external APIs"
       },
       "data": {
         "title": "Data Management",
@@ -416,7 +418,7 @@
     "themeDark": "Dark",
     "themeSystem": "System",
     "importExport": "SQL Import/Export",
-    "importExportHint": "Import or export database SQL backups for migration or restore (import supports only backups exported by CentaurAI Token Manager).",
+    "importExportHint": "Import or export database SQL backups for migration or restore (import supports only backups exported by TOKEN MANAGER).",
     "exportConfig": "Export SQL Backup",
     "selectConfigFile": "Select SQL File",
     "noFileSelected": "No configuration file selected.",
@@ -654,7 +656,7 @@
     "windowBehavior": "Window Behavior",
     "windowBehaviorHint": "Configure window minimize and Claude plugin integration policies.",
     "launchOnStartup": "Launch on Startup",
-    "launchOnStartupDescription": "Automatically run CentaurAI Token Manager when system starts",
+    "launchOnStartupDescription": "Automatically run TOKEN MANAGER when system starts",
     "silentStartup": "Silent Startup",
     "silentStartupDescription": "Start in background mode without showing main window",
     "autoLaunchFailed": "Failed to set auto-launch",
@@ -679,8 +681,8 @@
     },
     "skillStorage": {
       "title": "Skill Storage Location",
-      "description": "Choose where CentaurAI Token Manager stores the master copies of your skills",
-      "ccSwitch": "CentaurAI Token Manager",
+      "description": "Choose where TOKEN MANAGER stores the master copies of your skills",
+      "ccSwitch": "TOKEN MANAGER",
       "unified": "~/.agents/skills",
       "ccSwitchHint": "Skills are stored in ~/.cc-switch/skills/ and synced to each app via symlink or copy.",
       "unifiedHint": "Skills are stored in ~/.agents/skills/, the Agent Skills open standard. Compatible tools (Claude Code, Codex, Gemini CLI, etc.) discover skills here natively.",
@@ -728,8 +730,8 @@
     },
     "configDirectoryOverride": "Configuration Directory Override (Advanced)",
     "configDirectoryDescription": "When using Claude Code or Codex in environments like WSL, you can manually specify the configuration directory to the one in WSL to keep provider data consistent with the main environment.",
-    "appConfigDir": "CentaurAI Token Manager Configuration Directory",
-    "appConfigDirDescription": "Customize the storage location for CentaurAI Token Manager configuration (point to cloud sync folder to enable config sync)",
+    "appConfigDir": "TOKEN MANAGER Configuration Directory",
+    "appConfigDirDescription": "Customize the storage location for TOKEN MANAGER configuration (point to cloud sync folder to enable config sync)",
     "browsePlaceholderApp": "e.g., C:\\Users\\Administrator\\.cc-switch",
     "claudeConfigDir": "Claude Code Configuration Directory",
     "claudeConfigDirDescription": "Override Claude configuration directory (settings.json) and keep claude.json (MCP) alongside it.",
@@ -756,7 +758,12 @@
     "updating": "Updating...",
     "checking": "Checking...",
     "upToDate": "Up to Date",
-    "aboutHint": "View version information and update status.",
+    "aboutHint": "View application version and runtime information.",
+    "openSourceAttributionTitle": "Based on CC Switch",
+    "openSourceAttributionDescription": "TOKEN MANAGER is a CentaurAI-customized derivative of the open-source CC Switch project. CC Switch and this distribution are provided under the MIT License.",
+    "openSourceCopyrightNotice": "The original authors' copyright and MIT license notice are retained in accordance with the license terms.",
+    "viewUpstreamProject": "View CC Switch",
+    "viewMitLicense": "View MIT License",
     "portableMode": "Portable mode: updates require manual download.",
     "updateAvailable": "New version available: {{version}}",
     "updateBadge": "Update available",
@@ -771,6 +778,9 @@
     "manualInstallCommands": "Manual Install Commands",
     "oneClickInstallHint": "Install or upgrade Claude Code / Codex / Gemini CLI / OpenCode / OpenClaw / Hermes",
     "localEnvCheck": "Local environment check",
+    "localEnvCheckDescription": "Check and manage installed AI command-line tools and their versions.",
+    "autoUpgradeTools": "Automatically upgrade CLI tools",
+    "autoUpgradeToolsDescription": "Upgrade available tools automatically when this page checks for updates. Off by default.",
     "updateAllTools": "Update All ({{count}})",
     "currentVersion": "Current Version",
     "latestVersion": "Latest Version",
@@ -813,7 +823,7 @@
     "importFailedError": "Import config failed: {{message}}",
     "exportFailedError": "Export config failed:",
     "restartRequired": "Restart Required",
-    "restartRequiredMessage": "Modifying the CentaurAI Token Manager configuration directory requires restarting the application to take effect. Restart now?",
+    "restartRequiredMessage": "Modifying the TOKEN MANAGER configuration directory requires restarting the application to take effect. Restart now?",
     "restartNow": "Restart Now",
     "restartLater": "Restart Later",
     "restartFailed": "Application restart failed, please manually close and reopen.",
@@ -1565,7 +1575,7 @@
       "deleteConfirm": "Are you sure you want to delete server \"{{id}}\"? This action cannot be undone.",
       "noServers": "No servers yet",
       "enabledApps": "Enabled Apps",
-      "noImportFound": "No MCP servers to import found. All servers are already managed by CentaurAI Token Manager.",
+      "noImportFound": "No MCP servers to import found. All servers are already managed by TOKEN MANAGER.",
       "importSuccess": "Successfully imported {{count}} MCP servers",
       "apps": {
         "claude": "Claude",
@@ -2110,10 +2120,10 @@
     "noInstalledDescription": "Discover and install skills from repositories, or import existing skills",
     "discover": "Discover Skills",
     "import": "Import Existing",
-    "importDescription": "Select skills to import into CentaurAI Token Manager unified management",
+    "importDescription": "Select skills to import into TOKEN MANAGER unified management",
     "importSuccess": "Successfully imported {{count}} skills",
     "importSelected": "Import Selected ({{count}})",
-    "noUnmanagedFound": "No skills to import found. All skills are already managed by CentaurAI Token Manager.",
+    "noUnmanagedFound": "No skills to import found. All skills are already managed by TOKEN MANAGER.",
     "foundIn": "Found in",
     "local": "Local",
     "uninstallConfirm": "Are you sure you want to uninstall \"{{name}}\"? This will remove the skill from all apps and create a local backup first.",
@@ -2157,7 +2167,7 @@
   },
   "deeplink": {
     "confirmImport": "Confirm Import Provider",
-    "confirmImportDescription": "The following configuration will be imported from deep link into CentaurAI Token Manager",
+    "confirmImportDescription": "The following configuration will be imported from deep link into TOKEN MANAGER",
     "importPrompt": "Import Prompt",
     "importPromptDescription": "Please confirm whether to import this system prompt",
     "importMcp": "Import MCP Servers",

@@ -307,17 +307,6 @@ pub fn run() {
             #[cfg(target_os = "windows")]
             set_windows_app_user_model_id(app.handle());
 
-            // 注册 Updater 插件（桌面端）
-            #[cfg(desktop)]
-            {
-                if let Err(e) = app
-                    .handle()
-                    .plugin(tauri_plugin_updater::Builder::new().build())
-                {
-                    // 若配置不完整（如缺少 pubkey），跳过 Updater 而不中断应用
-                    log::warn!("初始化 Updater 插件失败，已跳过：{e}");
-                }
-            }
             // 初始化日志（单文件输出到 <app_config_dir>/logs/cc-switch.log）
             {
                 use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy};
@@ -776,23 +765,12 @@ pub fn run() {
             {
                 #[cfg(target_os = "linux")]
                 {
-                    // Use Tauri's path API to get correct path (includes app identifier)
-                    // tauri-plugin-deep-link writes to: ~/.local/share/com.ccswitch.desktop/applications/cc-switch-handler.desktop
-                    // Only register if .desktop file doesn't exist to avoid overwriting user customizations
-                    let should_register = app
-                        .path()
-                        .data_dir()
-                        .map(|d| !d.join("applications/cc-switch-handler.desktop").exists())
-                        .unwrap_or(true);
-
-                    if should_register {
-                        if let Err(e) = app.deep_link().register_all() {
-                            log::error!("✗ Failed to register deep link schemes: {}", e);
-                        } else {
-                            log::info!("✓ Deep link schemes registered (Linux)");
-                        }
+                    // Re-register on startup so the legacy ccswitch:// scheme follows
+                    // the current TOKEN MANAGER executable after a rename or upgrade.
+                    if let Err(e) = app.deep_link().register_all() {
+                        log::error!("✗ Failed to register deep link schemes: {}", e);
                     } else {
-                        log::info!("⊘ Deep link handler already exists, skipping registration");
+                        log::info!("✓ Deep link schemes registered (Linux)");
                     }
                 }
 
@@ -1165,8 +1143,6 @@ pub fn run() {
             commands::get_log_config,
             commands::set_log_config,
             commands::restart_app,
-            commands::install_update_and_restart,
-            commands::check_for_updates,
             commands::is_portable_mode,
             commands::copy_text_to_clipboard,
             commands::get_claude_plugin_status,
