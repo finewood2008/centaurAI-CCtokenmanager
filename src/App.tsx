@@ -42,7 +42,6 @@ import { useLastValidValue } from "@/hooks/useLastValidValue";
 import { extractErrorMessage } from "@/utils/errorUtils";
 import { isTextEditableTarget } from "@/utils/domUtils";
 import { deepClone } from "@/utils/deepClone";
-import { cn } from "@/lib/utils";
 import {
   isWindows,
   isLinux,
@@ -66,7 +65,7 @@ import {
   useDisableCurrentOmoSlim,
 } from "@/lib/query/omo";
 import OpenClawHealthBanner from "@/components/openclaw/OpenClawHealthBanner";
-import centaurAiLogo from "@/assets/icons/app-icon.png";
+import tokenManagerLogo from "@/assets/icons/app-icon.png";
 
 const SettingsPage = lazy(() =>
   import("@/components/settings/SettingsPage").then((module) => ({
@@ -131,7 +130,7 @@ interface SyncStatusUpdatedPayload {
 }
 
 const DEFAULT_DRAG_BAR_HEIGHT = isWindows() || isLinux() ? 0 : 28; // px
-const HEADER_HEIGHT = 64; // px
+const HEADER_HEIGHT = 76; // px
 
 const STORAGE_KEY = "cc-switch-last-app";
 const VALID_APPS: AppId[] = [
@@ -260,8 +259,7 @@ function App() {
   const mcpPanelRef = useRef<any>(null);
   const skillsPageRef = useRef<any>(null);
   const unifiedSkillsPanelRef = useRef<any>(null);
-  const addActionButtonClass =
-    "bg-orange-500 hover:bg-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600 text-white shadow-lg shadow-orange-500/30 dark:shadow-orange-500/40 rounded-full w-8 h-8";
+  const addActionButtonClass = "rounded-xl h-9 w-9 shadow-md shadow-primary/20";
 
   const {
     isRunning: isProxyRunning,
@@ -939,7 +937,7 @@ function App() {
         default:
           return (
             <div className="px-6 flex flex-col flex-1 min-h-0 overflow-hidden">
-              <div className="flex-1 overflow-y-auto overflow-x-hidden pb-12 px-1">
+              <div className="mx-auto w-full max-w-[1120px] flex-1 overflow-y-auto overflow-x-hidden pb-12 px-1 pt-6">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeApp}
@@ -947,8 +945,31 @@ function App() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.15 }}
-                    className="space-y-4"
+                    className="space-y-5"
                   >
+                    <section className="centaur-surface relative overflow-hidden px-6 py-5">
+                      <div className="centaur-rail absolute inset-x-0 top-0 h-[3px]" />
+                      <div className="flex items-end justify-between gap-4">
+                        <div>
+                          <p className="centaur-eyebrow">
+                            Key & endpoint management
+                          </p>
+                          <h2 className="centaur-title mt-1 text-2xl">
+                            {t(`apps.${activeApp}`)}
+                          </h2>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {t("provider.addProviderHint")}
+                          </p>
+                        </div>
+                        <div className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border bg-secondary/60 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                          {t("provider.configCount", {
+                            count: Object.keys(providers).length,
+                            defaultValue: "{{count}} configurations",
+                          })}
+                        </div>
+                      </div>
+                    </section>
                     <ProviderList
                       providers={providers}
                       currentProviderId={currentProviderId}
@@ -1023,7 +1044,7 @@ function App() {
 
   return (
     <div
-      className="flex flex-col h-screen overflow-hidden bg-background text-foreground selection:bg-primary/30 pb-4"
+      className="centaur-shell flex h-screen flex-col overflow-hidden text-foreground selection:bg-primary/25"
       style={{ overflowX: "hidden", paddingTop: contentTopOffset }}
     >
       {(dragBarHeight > 0 || useAppWindowControls) && (
@@ -1102,7 +1123,7 @@ function App() {
       )}
 
       <header
-        className="fixed z-50 w-full transition-all duration-300 bg-background/80 backdrop-blur-md"
+        className="centaur-header fixed z-50 w-full backdrop-blur-xl transition-all duration-300"
         {...DRAG_REGION_ATTR}
         style={
           {
@@ -1113,7 +1134,7 @@ function App() {
         }
       >
         <div
-          className="flex h-full items-center justify-between gap-2 px-6"
+          className="flex h-full items-center justify-between gap-4 px-5"
           {...DRAG_REGION_ATTR}
           style={{ ...DRAG_REGION_STYLE } as any}
         >
@@ -1122,10 +1143,10 @@ function App() {
             style={{ WebkitAppRegion: "no-drag" } as any}
           >
             <img
-              src={centaurAiLogo}
-              alt="CentaurAI"
+              src={tokenManagerLogo}
+              alt="TOKEN MANAGER"
               draggable={false}
-              className="mr-2 h-8 w-8 shrink-0 rounded-lg object-cover shadow-sm ring-1 ring-black/5 dark:ring-white/10"
+              className="mr-2 h-10 w-10 shrink-0 rounded-xl object-cover shadow-md shadow-primary/10 ring-1 ring-border"
             />
             {currentView !== "providers" ? (
               <div className="flex items-center gap-2">
@@ -1143,7 +1164,7 @@ function App() {
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
-                <h1 className="text-lg font-semibold">
+                <h1 className="centaur-title text-lg">
                   {currentView === "settings" && t("settings.title")}
                   {currentView === "prompts" &&
                     t("prompts.title", {
@@ -1162,18 +1183,15 @@ function App() {
                 </h1>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <div className="relative inline-flex items-center">
-                  <span
-                    className={cn(
-                      "text-xl font-semibold",
-                      isProxyRunning && isCurrentAppTakeoverActive
-                        ? "text-emerald-500 dark:text-emerald-400"
-                        : "text-blue-500 dark:text-blue-400",
-                    )}
-                  >
-                    CentaurAI Token Manager
+              <div className="flex items-center gap-2.5">
+                <div className="relative flex flex-col leading-none">
+                  <span className="centaur-eyebrow text-[9px]">CentaurAI</span>
+                  <span className="centaur-title mt-1 text-lg">
+                    TOKEN MANAGER
                   </span>
+                  {isProxyRunning && isCurrentAppTakeoverActive && (
+                    <span className="absolute -right-3 top-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-card" />
+                  )}
                 </div>
                 <Button
                   variant="ghost"
@@ -1183,7 +1201,7 @@ function App() {
                     setCurrentView("settings");
                   }}
                   title={t("common.settings")}
-                  className="hover:bg-black/5 dark:hover:bg-white/5"
+                  className="ml-1"
                 >
                   <Settings className="w-4 h-4" />
                 </Button>
@@ -1198,7 +1216,7 @@ function App() {
                     title={t("usage.title", {
                       defaultValue: "使用统计",
                     })}
-                    className="hover:bg-black/5 dark:hover:bg-white/5"
+                    className=""
                   >
                     <BarChart2 className="w-4 h-4" />
                   </Button>
@@ -1231,7 +1249,7 @@ function App() {
               )}
             <div
               ref={toolbarRef}
-              className="flex flex-1 min-w-0 overflow-x-hidden items-center py-4 pr-2"
+              className="flex min-w-0 flex-1 items-center overflow-x-hidden pr-1"
             >
               <div
                 className="flex shrink-0 items-center gap-1.5 ml-auto"
@@ -1358,7 +1376,7 @@ function App() {
                     <Button
                       onClick={() => setIsAddOpen(true)}
                       size="icon"
-                      className={`ml-2 ${addActionButtonClass}`}
+                      className={`ml-1 ${addActionButtonClass}`}
                     >
                       <Plus className="w-5 h-5" />
                     </Button>
@@ -1370,7 +1388,7 @@ function App() {
         </div>
       </header>
 
-      <main className="flex-1 min-h-0 flex flex-col overflow-y-auto animate-fade-in">
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto animate-fade-in">
         {isOpenClawView && openclawHealthWarnings.length > 0 && (
           <OpenClawHealthBanner warnings={openclawHealthWarnings} />
         )}

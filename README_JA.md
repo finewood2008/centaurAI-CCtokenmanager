@@ -1,6 +1,6 @@
-# CentaurAI Token Manager
+# TOKEN MANAGER
 
-CentaurAI Token Manager は CC Switch の CentaurAI ディストリビューションです。Claude Code、Claude Desktop、Codex、Gemini CLI、OpenCode、OpenClaw、Hermes Agent の API キーとエンドポイントをローカルで管理できます。
+TOKEN MANAGER は CC Switch の CentaurAI ディストリビューションです。Claude Code、Claude Desktop、Codex、Gemini CLI、OpenCode、OpenClaw、Hermes Agent の API キーとエンドポイントをローカルで管理できます。
 
 このディストリビューションでは、広告、スポンサーバッジ、紹介リンク、推奨プロバイダー表示、およびアップストリームの自動更新機能を削除しています。
 

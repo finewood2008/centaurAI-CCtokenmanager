@@ -40,7 +40,7 @@ export function AppSwitcher({
     localStorage.setItem(STORAGE_KEY, app);
     onSwitch(app);
   };
-  const iconSize = 20;
+  const iconSize = 18;
   const appIconName: Record<AppId, string> = {
     claude: "claude",
     "claude-desktop": "claude",
@@ -67,7 +67,7 @@ export function AppSwitcher({
   });
 
   return (
-    <div className="inline-flex bg-muted rounded-xl p-1 gap-1">
+    <div className="inline-flex gap-1 rounded-[14px] border border-border bg-secondary/65 p-1 shadow-inner shadow-black/[0.025]">
       {appsToShow.map((app) => {
         const badgeConfig = APP_BADGE_ICON[app];
         const BadgeIcon = badgeConfig?.icon;
@@ -78,10 +78,10 @@ export function AppSwitcher({
             type="button"
             onClick={() => handleSwitch(app)}
             className={cn(
-              "group inline-flex items-center px-3 h-8 rounded-md text-sm font-medium transition-all duration-200",
+              "group inline-flex h-9 items-center rounded-[10px] px-3 text-sm font-semibold transition-all duration-200",
               isActive
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-background/50",
+                ? "bg-card text-primary shadow-sm ring-1 ring-border"
+                : "text-muted-foreground hover:bg-card/60 hover:text-foreground",
             )}
           >
             <span className="relative inline-flex shrink-0">
@@ -95,8 +95,8 @@ export function AppSwitcher({
                   className={cn(
                     "absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-[3px] border h-[11px] w-[11px]",
                     isActive
-                      ? "bg-background border-border text-foreground"
-                      : "bg-muted border-background text-muted-foreground group-hover:bg-background group-hover:text-foreground",
+                      ? "bg-card border-primary/30 text-primary"
+                      : "bg-secondary border-card text-muted-foreground group-hover:bg-card group-hover:text-foreground",
                   )}
                   aria-hidden="true"
                 >

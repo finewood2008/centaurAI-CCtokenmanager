@@ -377,7 +377,7 @@ export function ProviderList({
         {[0, 1, 2].map((index) => (
           <div
             key={index}
-            className="w-full border border-dashed rounded-lg h-28 border-muted-foreground/40 bg-muted/40"
+            className="centaur-surface h-28 w-full animate-pulse border-dashed border-muted-foreground/40 bg-card/55"
           />
         ))}
       </div>
@@ -404,7 +404,7 @@ export function ProviderList({
         items={filteredProviders.map((provider) => provider.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           {filteredProviders.map((provider) => {
             const isOmo = provider.category === "omo";
             const isOmoSlim = provider.category === "omo-slim";
@@ -469,9 +469,9 @@ export function ProviderList({
   );
 
   return (
-    <div className="mt-4 space-y-4">
+    <div className="space-y-4">
       {claudeDesktopStatusMessages.length > 0 && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
+        <div className="rounded-[14px] border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
           <div className="flex items-center gap-2 font-medium">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             {t("claudeDesktop.statusTitle", {
@@ -495,7 +495,7 @@ export function ProviderList({
             transition={{ duration: 0.18, ease: "easeOut" }}
             className="fixed left-1/2 top-[6.5rem] z-40 w-[min(90vw,26rem)] -translate-x-1/2 sm:right-6 sm:left-auto sm:translate-x-0"
           >
-            <div className="p-4 space-y-3 border shadow-md rounded-2xl border-white/10 bg-background/95 shadow-black/20 backdrop-blur-md">
+            <div className="centaur-surface space-y-3 bg-card/95 p-4 shadow-xl backdrop-blur-md">
               <div className="relative flex items-center gap-2">
                 <Search className="absolute w-4 h-4 -translate-y-1/2 pointer-events-none left-3 top-1/2 text-muted-foreground" />
                 <Input
@@ -550,7 +550,7 @@ export function ProviderList({
       </AnimatePresence>
 
       {filteredProviders.length === 0 ? (
-        <div className="px-6 py-8 text-sm text-center border border-dashed rounded-lg border-border text-muted-foreground">
+        <div className="centaur-surface border-dashed px-6 py-10 text-center text-sm text-muted-foreground">
           {t("provider.noSearchResults", {
             defaultValue: "No providers match your search.",
           })}

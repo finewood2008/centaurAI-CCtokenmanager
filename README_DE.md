@@ -1,6 +1,6 @@
-# CentaurAI Token Manager
+# TOKEN MANAGER
 
-CentaurAI Token Manager ist die CentaurAI-Distribution von CC Switch. Die Anwendung verwaltet API-Schlüssel und Endpunkte für Claude Code, Claude Desktop, Codex, Gemini CLI, OpenCode, OpenClaw und Hermes Agent lokal.
+TOKEN MANAGER ist die CentaurAI-Distribution von CC Switch. Die Anwendung verwaltet API-Schlüssel und Endpunkte für Claude Code, Claude Desktop, Codex, Gemini CLI, OpenCode, OpenClaw und Hermes Agent lokal.
 
 Diese Distribution entfernt Werbung, Sponsorenabzeichen, Empfehlungslinks, hervorgehobene Anbieter und die automatische Aktualisierung des Upstream-Projekts. Benutzer tragen ihre eigenen Anbieter, Schlüssel und Endpunkte direkt ein.
 

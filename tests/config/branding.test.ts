@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { PRODUCT_NAME } from "@/config/branding";
 
-describe("CentaurAI Token Manager branding", () => {
-  it("uses the CentaurAI product name", () => {
-    expect(PRODUCT_NAME).toBe("CentaurAI Token Manager");
+describe("TOKEN MANAGER branding", () => {
+  it("uses the TOKEN MANAGER product name", () => {
+    expect(PRODUCT_NAME).toBe("TOKEN MANAGER");
   });
 });

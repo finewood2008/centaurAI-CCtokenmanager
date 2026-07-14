@@ -1,1 +1,1 @@
-export const PRODUCT_NAME = "CentaurAI Token Manager";
+export const PRODUCT_NAME = "TOKEN MANAGER";

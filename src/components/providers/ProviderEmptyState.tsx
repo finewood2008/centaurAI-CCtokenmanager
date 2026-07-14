@@ -19,11 +19,13 @@ export function ProviderEmptyState({
     appId === "claude" || appId === "codex" || appId === "gemini";
 
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border p-10 text-center">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-        <Users className="h-7 w-7 text-muted-foreground" />
+    <div className="centaur-surface relative flex flex-col items-center justify-center overflow-hidden border-dashed p-12 text-center">
+      <div className="centaur-rail absolute inset-x-0 top-0 h-[3px] opacity-70" />
+      <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-primary/15 bg-primary/10 shadow-sm">
+        <Users className="h-7 w-7 text-primary" />
       </div>
-      <h3 className="text-lg font-semibold">{t("provider.noProviders")}</h3>
+      <p className="centaur-eyebrow mb-2">Get started</p>
+      <h3 className="centaur-title text-xl">{t("provider.noProviders")}</h3>
       <p className="mt-2 max-w-lg text-sm text-muted-foreground">
         {t("provider.noProvidersDescription")}
       </p>
@@ -32,7 +34,7 @@ export function ProviderEmptyState({
           {t("provider.noProvidersDescriptionSnippet")}
         </p>
       )}
-      <div className="mt-6 flex flex-col gap-2">
+      <div className="mt-7 flex flex-row flex-wrap justify-center gap-2.5">
         {onImport && (
           <Button onClick={onImport}>
             <Download className="mr-2 h-4 w-4" />

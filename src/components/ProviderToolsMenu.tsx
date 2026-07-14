@@ -67,7 +67,7 @@ export function ProviderToolsMenu({
         <Button
           variant="ghost"
           size="sm"
-          className="gap-1.5 bg-muted text-muted-foreground hover:text-foreground"
+          className="h-9 gap-1.5 border border-border bg-card/70 text-muted-foreground shadow-sm hover:border-primary/35 hover:text-foreground"
         >
           <Wrench className="h-4 w-4" />
           <span>{t("common.tools", { defaultValue: "工具" })}</span>

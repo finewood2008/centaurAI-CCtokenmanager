@@ -118,6 +118,9 @@ vi.mock("@/components/settings/ImportExportSection", () => ({
 
 vi.mock("@/components/settings/AboutSection", () => ({
   AboutSection: ({ isPortable }: any) => <div>about:{String(isPortable)}</div>,
+  ToolEnvironmentSection: ({ isActive }: any) => (
+    <div>tool-environment:{String(isActive)}</div>
+  ),
 }));
 
 const renderDialog = (

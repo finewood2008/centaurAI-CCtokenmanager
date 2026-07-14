@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "CentaurAI Token Manager",
+    "title": "TOKEN MANAGER",
     "description": "Claude Code・Codex・Gemini CLI のためのオールインワンアシスタント"
   },
   "common": {
@@ -43,9 +43,9 @@
     "notSet": "未設定"
   },
   "firstRunNotice": {
-    "title": "CentaurAI Token Manager へようこそ",
-    "bodyDefault": "CentaurAI Token Manager は Claude Code / Codex / Gemini CLI の複数プロバイダーをワンクリックで切り替えられるツールです。すでにこれらのツールを設定済みの場合、CentaurAI Token Manager は現在の設定を「default」という名前のプロバイダーとして自動的に保存するので、既存の設定が失われることはありません。",
-    "bodyOfficial": "リストには「Official（公式）」プリセットも用意されており、公式バージョンに戻したくなったらクリックするだけで切り替えられます。切り替える前に現在の設定は自動で default にバックアップされるので、自由に行き来できます。これが CentaurAI Token Manager の仕組みです 😊",
+    "title": "TOKEN MANAGER へようこそ",
+    "bodyDefault": "TOKEN MANAGER は Claude Code / Codex / Gemini CLI の複数プロバイダーをワンクリックで切り替えられるツールです。すでにこれらのツールを設定済みの場合、TOKEN MANAGER は現在の設定を「default」という名前のプロバイダーとして自動的に保存するので、既存の設定が失われることはありません。",
+    "bodyOfficial": "リストには「Official（公式）」プリセットも用意されており、公式バージョンに戻したくなったらクリックするだけで切り替えられます。切り替える前に現在の設定は自動で default にバックアップされるので、自由に行き来できます。これが TOKEN MANAGER の仕組みです 😊",
     "confirm": "了解しました"
   },
   "apiKeyInput": {
@@ -101,6 +101,7 @@
     "tabProvider": "プロバイダー",
     "tabUniversal": "統一プロバイダー",
     "noProviders": "まだプロバイダーがありません",
+    "configCount": "{{count}} 件の設定",
     "noProvidersDescription": "既存の設定がある場合は「現在の設定をインポート」をクリックしてください。すべてのデータが default プロバイダーに安全に保存されます",
     "noProvidersDescriptionSnippet": "API キーとリクエスト URL 以外のデータ（プラグインなど）は共通設定スニペットに保存され、プロバイダー間で共有できます",
     "importCurrent": "現在の設定をインポート",
@@ -187,7 +188,7 @@
     "modeProxy": "ルーティング必要",
     "modelMappingToggle": "モデルマッピングが必要",
     "modelMappingOffHint": "プロバイダーが Claude Desktop の三つの役割 ID（claude-sonnet-* / claude-opus-* / claude-haiku-*）を受け付ける場合のみ直結できます。それ以外のモデル名（claude-3-5-sonnet-… などの旧式 ID を含む）はこのスイッチを有効にしてマッピングを使ってください。",
-    "modelMappingOnHint": "Claude Desktop は claude-sonnet-* / claude-opus-* / claude-haiku-* の三つの役割 ID のみ受け付けます。有効にすると CentaurAI Token Manager がこの三役割をプロバイダーの実モデルにマッピングし、使用中はローカルルーティングを起動したままにします。",
+    "modelMappingOnHint": "Claude Desktop は claude-sonnet-* / claude-opus-* / claude-haiku-* の三つの役割 ID のみ受け付けます。有効にすると TOKEN MANAGER がこの三役割をプロバイダーの実モデルにマッピングし、使用中はローカルルーティングを起動したままにします。",
     "routeMapTitle": "モデルマッピング",
     "routeMapHint": "Sonnet・Opus・Haiku の各区分に実際のリクエストモデルを入力してください。DeepSeek や Kimi などのブランド名はメニュー表示名に入れられます。空欄の区分は Sonnet（または最初に入力した区分）のモデルを引き継ぐため、サブ agent が呼び出す Haiku が常に利用可能になります。",
     "routeModelLabel": "モデル役割",
@@ -226,7 +227,7 @@
     "switchSuccess": "切り替え成功！",
     "codexRestartRequired": "切り替えました。反映するにはクライアントを再起動してください",
     "claudeDesktopRestartRequired": "切り替えました。反映するには Claude Desktop を再起動してください",
-    "claudeDesktopProxyRestartRequired": "切り替えました。CentaurAI Token Manager を起動したまま Claude Desktop を再起動してください",
+    "claudeDesktopProxyRestartRequired": "切り替えました。TOKEN MANAGER を起動したまま Claude Desktop を再起動してください",
     "addToConfigSuccess": "設定に追加しました",
     "removeFromConfigSuccess": "設定から削除しました",
     "switchFailedTitle": "切り替えに失敗しました",
@@ -267,7 +268,7 @@
     "deleteProvider": "プロバイダーを削除",
     "deleteProviderMessage": "プロバイダー「{{name}}」を削除してもよろしいですか？この操作は元に戻せません。",
     "removeProvider": "プロバイダーを解除",
-    "removeProviderMessage": "プロバイダー「{{name}}」を設定から解除してもよろしいですか？\n\n解除後、このプロバイダーは無効になりますが、設定データは CentaurAI Token Manager に保持されます。いつでも再追加できます。",
+    "removeProviderMessage": "プロバイダー「{{name}}」を設定から解除してもよろしいですか？\n\n解除後、このプロバイダーは無効になりますが、設定データは TOKEN MANAGER に保持されます。いつでも再追加できます。",
     "proxy": {
       "title": "ローカルルーティングの有効化",
       "message": "ローカルルーティングは上級機能です。有効にする前に、その仕組みを理解していることをご確認ください。\n\n適切な設定方法については、関連ドキュメントまたはプロバイダーにご相談ください。",
@@ -306,6 +307,7 @@
     "tabAuth": "認証",
     "tabAdvanced": "詳細",
     "tabProxy": "ルーティング",
+    "tabEnvironment": "環境更新",
     "authCenter": {
       "title": "OAuth 認証センター",
       "description": "Claude Code で他のサブスクリプションをご利用いただけます。コンプライアンスリスクにご注意ください。",
@@ -342,7 +344,7 @@
       },
       "globalProxy": {
         "title": "グローバル送信プロキシ",
-        "description": "CentaurAI Token Manager が外部 API にアクセスする際のプロキシを設定"
+        "description": "TOKEN MANAGER が外部 API にアクセスする際のプロキシを設定"
       },
       "data": {
         "title": "データ管理",
@@ -416,7 +418,7 @@
     "themeDark": "ダーク",
     "themeSystem": "システム",
     "importExport": "SQL インポート/エクスポート",
-    "importExportHint": "移行や復元用にデータベースの SQL バックアップをインポート/エクスポートします（インポートは CentaurAI Token Manager がエクスポートしたバックアップのみ対応）。",
+    "importExportHint": "移行や復元用にデータベースの SQL バックアップをインポート/エクスポートします（インポートは TOKEN MANAGER がエクスポートしたバックアップのみ対応）。",
     "exportConfig": "SQL バックアップをエクスポート",
     "selectConfigFile": "SQL ファイルを選択",
     "noFileSelected": "ファイルが選択されていません。",
@@ -654,7 +656,7 @@
     "windowBehavior": "ウィンドウ動作",
     "windowBehaviorHint": "最小化動作や Claude プラグイン連携を設定します。",
     "launchOnStartup": "起動時に自動実行",
-    "launchOnStartupDescription": "システム起動時に CentaurAI Token Manager を自動起動します",
+    "launchOnStartupDescription": "システム起動時に TOKEN MANAGER を自動起動します",
     "silentStartup": "サイレント起動",
     "silentStartupDescription": "起動時にメインウィンドウを表示せず、トレイのみで起動",
     "autoLaunchFailed": "自動起動の設定に失敗しました",
@@ -679,8 +681,8 @@
     },
     "skillStorage": {
       "title": "スキル保存場所",
-      "description": "CentaurAI Token Manager がスキルのマスターコピーを保存するディレクトリを選択します",
-      "ccSwitch": "CentaurAI Token Manager",
+      "description": "TOKEN MANAGER がスキルのマスターコピーを保存するディレクトリを選択します",
+      "ccSwitch": "TOKEN MANAGER",
       "unified": "~/.agents/skills",
       "ccSwitchHint": "スキルは ~/.cc-switch/skills/ に保存され、シンボリックリンクまたはコピーで各アプリに同期されます。",
       "unifiedHint": "スキルは ~/.agents/skills/ に保存されます（Agent Skills オープン標準）。対応ツール（Claude Code、Codex、Gemini CLI など）はこのディレクトリのスキルを直接検出します。",
@@ -728,8 +730,8 @@
     },
     "configDirectoryOverride": "設定ディレクトリの上書き（詳細）",
     "configDirectoryDescription": "WSL などで Claude Code や Codex を使う場合、ここで設定ディレクトリを WSL 側に合わせるとデータを揃えられます。",
-    "appConfigDir": "CentaurAI Token Manager 設定ディレクトリ",
-    "appConfigDirDescription": "CentaurAI Token Manager の保存場所をカスタマイズします（クラウド同期フォルダを指定すると設定を同期できます）",
+    "appConfigDir": "TOKEN MANAGER 設定ディレクトリ",
+    "appConfigDirDescription": "TOKEN MANAGER の保存場所をカスタマイズします（クラウド同期フォルダを指定すると設定を同期できます）",
     "browsePlaceholderApp": "例: C:\\\\Users\\\\Administrator\\\\.cc-switch",
     "claudeConfigDir": "Claude Code 設定ディレクトリ",
     "claudeConfigDirDescription": "Claude の設定ディレクトリ（settings.json）を上書きし、claude.json（MCP）も同じ場所に置きます。",
@@ -756,7 +758,12 @@
     "updating": "更新中...",
     "checking": "確認中...",
     "upToDate": "最新バージョンです",
-    "aboutHint": "バージョン情報と更新状況を表示します。",
+    "aboutHint": "アプリのバージョンと実行環境の情報を表示します。",
+    "openSourceAttributionTitle": "CC Switch を基にした二次開発",
+    "openSourceAttributionDescription": "TOKEN MANAGER は、オープンソースの CC Switch を基に二次開発された CentaurAI カスタムディストリビューションです。CC Switch と本ディストリビューションはいずれも MIT License に従います。",
+    "openSourceCopyrightNotice": "ライセンス条件に従い、原作者の著作権表示と MIT ライセンス表示を保持しています。",
+    "viewUpstreamProject": "CC Switch を表示",
+    "viewMitLicense": "MIT License を表示",
     "portableMode": "ポータブルモード: 更新は手動ダウンロードが必要です。",
     "updateAvailable": "新しいバージョンがあります: {{version}}",
     "updateBadge": "更新あり",
@@ -771,6 +778,9 @@
     "manualInstallCommands": "手動インストールコマンド",
     "oneClickInstallHint": "Claude Code / Codex / Gemini CLI / OpenCode / OpenClaw / Hermes をインストールまたは更新",
     "localEnvCheck": "ローカル環境チェック",
+    "localEnvCheckDescription": "ローカルの AI コマンドラインツールのインストール状態とバージョンを管理します。",
+    "autoUpgradeTools": "CLI ツールを自動更新",
+    "autoUpgradeToolsDescription": "このページで新しいバージョンを検出した場合に自動更新します。初期設定はオフです。",
     "updateAllTools": "すべて更新（{{count}}）",
     "currentVersion": "現在のバージョン",
     "latestVersion": "最新バージョン",
@@ -813,7 +823,7 @@
     "importFailedError": "設定のインポートに失敗しました: {{message}}",
     "exportFailedError": "設定のエクスポートに失敗しました:",
     "restartRequired": "再起動が必要です",
-    "restartRequiredMessage": "CentaurAI Token Manager の設定ディレクトリを変更すると再起動が必要です。今すぐ再起動しますか？",
+    "restartRequiredMessage": "TOKEN MANAGER の設定ディレクトリを変更すると再起動が必要です。今すぐ再起動しますか？",
     "restartNow": "今すぐ再起動",
     "restartLater": "後で再起動",
     "restartFailed": "アプリの再起動に失敗しました。手動で閉じて再度開いてください。",
@@ -1565,7 +1575,7 @@
       "deleteConfirm": "サーバー「{{id}}」を削除しますか？この操作は元に戻せません。",
       "noServers": "まだサーバーがありません",
       "enabledApps": "有効なアプリ",
-      "noImportFound": "インポートする MCP サーバーが見つかりませんでした。すべてのサーバーは CentaurAI Token Manager で管理されています。",
+      "noImportFound": "インポートする MCP サーバーが見つかりませんでした。すべてのサーバーは TOKEN MANAGER で管理されています。",
       "importSuccess": "{{count}} 個の MCP サーバーをインポートしました",
       "apps": {
         "claude": "Claude",
@@ -2110,10 +2120,10 @@
     "noInstalledDescription": "リポジトリからスキルを発見してインストールするか、既存のスキルをインポートしてください",
     "discover": "スキルを発見",
     "import": "既存をインポート",
-    "importDescription": "CentaurAI Token Manager 統合管理にインポートするスキルを選択してください",
+    "importDescription": "TOKEN MANAGER 統合管理にインポートするスキルを選択してください",
     "importSuccess": "{{count}} 件のスキルをインポートしました",
     "importSelected": "選択をインポート ({{count}})",
-    "noUnmanagedFound": "インポートするスキルが見つかりませんでした。すべてのスキルは CentaurAI Token Manager で管理されています。",
+    "noUnmanagedFound": "インポートするスキルが見つかりませんでした。すべてのスキルは TOKEN MANAGER で管理されています。",
     "foundIn": "発見場所",
     "local": "ローカル",
     "uninstallConfirm": "「{{name}}」をアンインストールしますか？すべてのアプリからこのスキルが削除され、削除前にローカルバックアップが自動作成されます。",
@@ -2157,7 +2167,7 @@
   },
   "deeplink": {
     "confirmImport": "プロバイダーのインポートを確認",
-    "confirmImportDescription": "次の設定をディープリンクから CentaurAI Token Manager へインポートします",
+    "confirmImportDescription": "次の設定をディープリンクから TOKEN MANAGER へインポートします",
     "importPrompt": "プロンプトをインポート",
     "importPromptDescription": "このシステムプロンプトをインポートするか確認してください",
     "importMcp": "MCP サーバーをインポート",
