@@ -23,7 +23,8 @@ export const IconPicker: React.FC<IconPickerProps> = ({
   // 过滤图标列表
   const filteredIcons = useMemo(() => {
     if (!searchQuery) return iconList;
-    return searchIcons(searchQuery);
+    const availableIcons = new Set(iconList);
+    return searchIcons(searchQuery).filter((name) => availableIcons.has(name));
   }, [searchQuery]);
 
   return (

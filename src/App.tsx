@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -12,20 +12,12 @@ import {
   Maximize2,
   Minimize2,
   X,
-  Book,
-  Brain,
-  Wrench,
   RefreshCw,
   History,
   BarChart2,
   Download,
   FolderArchive,
   Search,
-  FolderOpen,
-  KeyRound,
-  Shield,
-  Cpu,
-  LayoutDashboard,
 } from "lucide-react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { Provider, VisibleApps } from "@/types";
@@ -59,37 +51,64 @@ import {
 } from "@/lib/platform";
 import { AppSwitcher } from "@/components/AppSwitcher";
 import { ProviderList } from "@/components/providers/ProviderList";
-import { AddProviderDialog } from "@/components/providers/AddProviderDialog";
-import { EditProviderDialog } from "@/components/providers/EditProviderDialog";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { SettingsPage } from "@/components/settings/SettingsPage";
 import { EnvWarningBanner } from "@/components/env/EnvWarningBanner";
 import { ProxyToggle } from "@/components/proxy/ProxyToggle";
 import { ClaudeDesktopRouteToggle } from "@/components/proxy/ClaudeDesktopRouteToggle";
 import { FailoverToggle } from "@/components/proxy/FailoverToggle";
 import UsageScriptModal from "@/components/UsageScriptModal";
-import UnifiedMcpPanel from "@/components/mcp/UnifiedMcpPanel";
-import PromptPanel from "@/components/prompts/PromptPanel";
-import { SkillsPage } from "@/components/skills/SkillsPage";
-import UnifiedSkillsPanel from "@/components/skills/UnifiedSkillsPanel";
 import { DeepLinkImportDialog } from "@/components/DeepLinkImportDialog";
 import { FirstRunNoticeDialog } from "@/components/FirstRunNoticeDialog";
-import { AgentsPanel } from "@/components/agents/AgentsPanel";
-import { UniversalProviderPanel } from "@/components/universal";
-import { McpIcon } from "@/components/BrandIcons";
 import { Button } from "@/components/ui/button";
-import { SessionManagerPage } from "@/components/sessions/SessionManagerPage";
+import { ProviderToolsMenu } from "@/components/ProviderToolsMenu";
 import {
   useDisableCurrentOmo,
   useDisableCurrentOmoSlim,
 } from "@/lib/query/omo";
-import WorkspaceFilesPanel from "@/components/workspace/WorkspaceFilesPanel";
-import EnvPanel from "@/components/openclaw/EnvPanel";
-import ToolsPanel from "@/components/openclaw/ToolsPanel";
-import AgentsDefaultsPanel from "@/components/openclaw/AgentsDefaultsPanel";
 import OpenClawHealthBanner from "@/components/openclaw/OpenClawHealthBanner";
-import HermesMemoryPanel from "@/components/hermes/HermesMemoryPanel";
 import centaurAiLogo from "@/assets/icons/app-icon.png";
+
+const SettingsPage = lazy(() =>
+  import("@/components/settings/SettingsPage").then((module) => ({
+    default: module.SettingsPage,
+  })),
+);
+const AddProviderDialog = lazy(() =>
+  import("@/components/providers/AddProviderDialog").then((module) => ({
+    default: module.AddProviderDialog,
+  })),
+);
+const EditProviderDialog = lazy(() =>
+  import("@/components/providers/EditProviderDialog").then((module) => ({
+    default: module.EditProviderDialog,
+  })),
+);
+const UnifiedMcpPanel = lazy(() => import("@/components/mcp/UnifiedMcpPanel"));
+const PromptPanel = lazy(() => import("@/components/prompts/PromptPanel"));
+const SkillsPage = lazy(() =>
+  import("@/components/skills/SkillsPage").then((module) => ({
+    default: module.SkillsPage,
+  })),
+);
+const UnifiedSkillsPanel = lazy(
+  () => import("@/components/skills/UnifiedSkillsPanel"),
+);
+const SessionManagerPage = lazy(() =>
+  import("@/components/sessions/SessionManagerPage").then((module) => ({
+    default: module.SessionManagerPage,
+  })),
+);
+const WorkspaceFilesPanel = lazy(
+  () => import("@/components/workspace/WorkspaceFilesPanel"),
+);
+const EnvPanel = lazy(() => import("@/components/openclaw/EnvPanel"));
+const ToolsPanel = lazy(() => import("@/components/openclaw/ToolsPanel"));
+const AgentsDefaultsPanel = lazy(
+  () => import("@/components/openclaw/AgentsDefaultsPanel"),
+);
+const HermesMemoryPanel = lazy(
+  () => import("@/components/hermes/HermesMemoryPanel"),
+);
 
 type View =
   | "providers"
@@ -98,8 +117,6 @@ type View =
   | "skills"
   | "skillsDiscovery"
   | "mcp"
-  | "agents"
-  | "universal"
   | "sessions"
   | "workspace"
   | "openclawEnv"
@@ -143,8 +160,6 @@ const VALID_VIEWS: View[] = [
   "skills",
   "skillsDiscovery",
   "mcp",
-  "agents",
-  "universal",
   "sessions",
   "workspace",
   "openclawEnv",
@@ -906,17 +921,6 @@ function App() {
               onOpenChange={() => setCurrentView("providers")}
             />
           );
-        case "agents":
-          return (
-            <AgentsPanel onOpenChange={() => setCurrentView("providers")} />
-          );
-        case "universal":
-          return (
-            <div className="px-6 pt-4">
-              <UniversalProviderPanel />
-            </div>
-          );
-
         case "sessions":
           return (
             <SessionManagerPage
@@ -1148,11 +1152,6 @@ function App() {
                   {currentView === "skills" && t("skills.title")}
                   {currentView === "skillsDiscovery" && t("skills.title")}
                   {currentView === "mcp" && t("mcp.unifiedPanel.title")}
-                  {currentView === "agents" && t("agents.title")}
-                  {currentView === "universal" &&
-                    t("universalProvider.title", {
-                      defaultValue: "统一供应商",
-                    })}
                   {currentView === "sessions" && t("sessionManager.title")}
                   {currentView === "workspace" && t("workspace.title")}
                   {currentView === "openclawEnv" && t("openclaw.env.title")}
@@ -1348,164 +1347,13 @@ function App() {
                       compact={isToolbarCompact}
                     />
 
-                    <div className="flex items-center gap-1 p-1 bg-muted rounded-xl">
-                      <AnimatePresence mode="wait">
-                        <motion.div
-                          key={
-                            activeApp === "openclaw"
-                              ? "openclaw"
-                              : activeApp === "hermes"
-                                ? "hermes"
-                                : "default"
-                          }
-                          className="flex items-center gap-1"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.15 }}
-                        >
-                          {activeApp === "hermes" ? (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCurrentView("skills")}
-                                className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 w-8 px-2"
-                                title={t("skills.manage")}
-                              >
-                                <Wrench className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCurrentView("hermesMemory")}
-                                className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 w-8 px-2"
-                                title={t("hermes.memory.title")}
-                              >
-                                <Brain className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => void openHermesWebUI()}
-                                className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 w-8 px-2"
-                                title={t("hermes.webui.open")}
-                              >
-                                <LayoutDashboard className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCurrentView("mcp")}
-                                className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 w-8 px-2"
-                                title={t("mcp.title")}
-                              >
-                                <McpIcon size={16} />
-                              </Button>
-                            </>
-                          ) : activeApp === "openclaw" ? (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCurrentView("workspace")}
-                                className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 w-8 px-2"
-                                title={t("workspace.manage")}
-                              >
-                                <FolderOpen className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCurrentView("openclawEnv")}
-                                className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 w-8 px-2"
-                                title={t("openclaw.env.title")}
-                              >
-                                <KeyRound className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCurrentView("openclawTools")}
-                                className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 w-8 px-2"
-                                title={t("openclaw.tools.title")}
-                              >
-                                <Shield className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCurrentView("openclawAgents")}
-                                className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 w-8 px-2"
-                                title={t("openclaw.agents.title")}
-                              >
-                                <Cpu className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCurrentView("sessions")}
-                                className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 w-8 px-2"
-                                title={t("sessionManager.title")}
-                              >
-                                <History className="w-4 h-4" />
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCurrentView("skills")}
-                                className={cn(
-                                  "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5",
-                                  "transition-all duration-200 ease-in-out overflow-hidden",
-                                  hasSkillsSupport
-                                    ? "opacity-100 w-8 scale-100 px-2"
-                                    : "opacity-0 w-0 scale-75 pointer-events-none px-0 -ml-1",
-                                )}
-                                title={t("skills.manage")}
-                              >
-                                <Wrench className="flex-shrink-0 w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCurrentView("prompts")}
-                                className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 w-8 px-2"
-                                title={t("prompts.manage")}
-                              >
-                                <Book className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCurrentView("sessions")}
-                                className={cn(
-                                  "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5",
-                                  "transition-all duration-200 ease-in-out overflow-hidden",
-                                  hasSessionSupport
-                                    ? "opacity-100 w-8 scale-100 px-2"
-                                    : "opacity-0 w-0 scale-75 pointer-events-none px-0 -ml-1",
-                                )}
-                                title={t("sessionManager.title")}
-                              >
-                                <History className="flex-shrink-0 w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setCurrentView("mcp")}
-                                className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 w-8 px-2"
-                                title={t("mcp.title")}
-                              >
-                                <McpIcon size={16} />
-                              </Button>
-                            </>
-                          )}
-                        </motion.div>
-                      </AnimatePresence>
-                    </div>
+                    <ProviderToolsMenu
+                      activeApp={activeApp}
+                      hasSkillsSupport={hasSkillsSupport}
+                      hasSessionSupport={hasSessionSupport}
+                      onOpenView={setCurrentView}
+                      onOpenHermesWebUI={() => void openHermesWebUI()}
+                    />
 
                     <Button
                       onClick={() => setIsAddOpen(true)}
@@ -1526,28 +1374,42 @@ function App() {
         {isOpenClawView && openclawHealthWarnings.length > 0 && (
           <OpenClawHealthBanner warnings={openclawHealthWarnings} />
         )}
-        {renderContent()}
+        <Suspense
+          fallback={
+            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+              {t("common.loading", { defaultValue: "加载中…" })}
+            </div>
+          }
+        >
+          {renderContent()}
+        </Suspense>
       </main>
 
-      <AddProviderDialog
-        open={isAddOpen}
-        onOpenChange={setIsAddOpen}
-        appId={activeApp}
-        onSubmit={addProvider}
-      />
+      <Suspense fallback={null}>
+        {isAddOpen && (
+          <AddProviderDialog
+            open={isAddOpen}
+            onOpenChange={setIsAddOpen}
+            appId={activeApp}
+            onSubmit={addProvider}
+          />
+        )}
 
-      <EditProviderDialog
-        open={Boolean(editingProvider)}
-        provider={effectiveEditingProvider}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditingProvider(null);
-          }
-        }}
-        onSubmit={handleEditProvider}
-        appId={activeApp}
-        isProxyTakeover={isCurrentAppTakeoverActive}
-      />
+        {editingProvider && (
+          <EditProviderDialog
+            open={Boolean(editingProvider)}
+            provider={effectiveEditingProvider}
+            onOpenChange={(open) => {
+              if (!open) {
+                setEditingProvider(null);
+              }
+            }}
+            onSubmit={handleEditProvider}
+            appId={activeApp}
+            isProxyTakeover={isCurrentAppTakeoverActive}
+          />
+        )}
+      </Suspense>
 
       {effectiveUsageProvider && (
         <UsageScriptModal

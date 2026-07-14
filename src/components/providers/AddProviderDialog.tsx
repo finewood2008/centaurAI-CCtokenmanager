@@ -14,10 +14,6 @@ import {
 } from "@/components/providers/forms/ProviderForm";
 import { UniversalProviderFormModal } from "@/components/universal/UniversalProviderFormModal";
 import { UniversalProviderPanel } from "@/components/universal";
-import { providerPresets } from "@/config/claudeProviderPresets";
-import { codexProviderPresets } from "@/config/codexProviderPresets";
-import { geminiProviderPresets } from "@/config/geminiProviderPresets";
-import { claudeDesktopProviderPresets } from "@/config/claudeDesktopProviderPresets";
 import { extractCodexBaseUrl } from "@/utils/providerConfigUtils";
 import type { OpenClawSuggestedDefaults } from "@/config/openclawProviderPresets";
 import type { UniversalProviderPreset } from "@/config/universalProviderPresets";
@@ -111,16 +107,6 @@ export function AddProviderDialog({
         ...(values.meta ? { meta: values.meta } : {}),
       };
 
-      if (appId === "claude-desktop" && values.presetId) {
-        const presetIndex = parseInt(
-          values.presetId.replace("claude-desktop-", ""),
-        );
-        const preset = claudeDesktopProviderPresets[presetIndex];
-        providerData.ensureClaudeDesktopOfficialSeed =
-          values.presetCategory === "official" &&
-          preset?.category === "official";
-      }
-
       // OpenCode/OpenClaw: pass providerKey for ID generation
       if (
         (appId === "opencode" || appId === "openclaw" || appId === "hermes") &&
@@ -142,69 +128,6 @@ export function AddProviderDialog({
             urlSet.add(url);
           }
         };
-
-        if (values.presetId) {
-          if (appId === "claude") {
-            const presets = providerPresets;
-            const presetIndex = parseInt(
-              values.presetId.replace("claude-", ""),
-            );
-            if (
-              !isNaN(presetIndex) &&
-              presetIndex >= 0 &&
-              presetIndex < presets.length
-            ) {
-              const preset = presets[presetIndex];
-              if (preset?.endpointCandidates) {
-                preset.endpointCandidates.forEach(addUrl);
-              }
-            }
-          } else if (appId === "codex") {
-            const presets = codexProviderPresets;
-            const presetIndex = parseInt(values.presetId.replace("codex-", ""));
-            if (
-              !isNaN(presetIndex) &&
-              presetIndex >= 0 &&
-              presetIndex < presets.length
-            ) {
-              const preset = presets[presetIndex];
-              if (Array.isArray(preset.endpointCandidates)) {
-                preset.endpointCandidates.forEach(addUrl);
-              }
-            }
-          } else if (appId === "gemini") {
-            const presets = geminiProviderPresets;
-            const presetIndex = parseInt(
-              values.presetId.replace("gemini-", ""),
-            );
-            if (
-              !isNaN(presetIndex) &&
-              presetIndex >= 0 &&
-              presetIndex < presets.length
-            ) {
-              const preset = presets[presetIndex];
-              if (Array.isArray(preset.endpointCandidates)) {
-                preset.endpointCandidates.forEach(addUrl);
-              }
-            }
-          } else if (appId === "claude-desktop") {
-            const presets = claudeDesktopProviderPresets;
-            const presetIndex = parseInt(
-              values.presetId.replace("claude-desktop-", ""),
-            );
-            if (
-              !isNaN(presetIndex) &&
-              presetIndex >= 0 &&
-              presetIndex < presets.length
-            ) {
-              const preset = presets[presetIndex];
-              if (Array.isArray(preset.endpointCandidates)) {
-                preset.endpointCandidates.forEach(addUrl);
-              }
-              addUrl(preset.baseUrl);
-            }
-          }
-        }
 
         if (appId === "claude") {
           const env = parsedConfig.env as Record<string, any> | undefined;

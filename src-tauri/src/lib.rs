@@ -307,17 +307,6 @@ pub fn run() {
             #[cfg(target_os = "windows")]
             set_windows_app_user_model_id(app.handle());
 
-            // 注册 Updater 插件（桌面端）
-            #[cfg(desktop)]
-            {
-                if let Err(e) = app
-                    .handle()
-                    .plugin(tauri_plugin_updater::Builder::new().build())
-                {
-                    // 若配置不完整（如缺少 pubkey），跳过 Updater 而不中断应用
-                    log::warn!("初始化 Updater 插件失败，已跳过：{e}");
-                }
-            }
             // 初始化日志（单文件输出到 <app_config_dir>/logs/cc-switch.log）
             {
                 use tauri_plugin_log::{RotationStrategy, Target, TargetKind, TimezoneStrategy};
@@ -1165,8 +1154,6 @@ pub fn run() {
             commands::get_log_config,
             commands::set_log_config,
             commands::restart_app,
-            commands::install_update_and_restart,
-            commands::check_for_updates,
             commands::is_portable_mode,
             commands::copy_text_to_clipboard,
             commands::get_claude_plugin_status,

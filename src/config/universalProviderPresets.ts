@@ -2,7 +2,7 @@
  * 统一供应商（Universal Provider）预设配置
  *
  * 统一供应商是跨应用共享的配置，修改后会自动同步到 Claude、Codex、Gemini 三个应用。
- * 适用于 NewAPI 等支持多种协议的 API 网关。
+ * 适用于用户自建的多协议 API 网关。
  */
 
 import type {
@@ -37,9 +37,9 @@ export interface UniversalProviderPreset {
 }
 
 /**
- * NewAPI 默认模型配置
+ * 自定义网关默认模型配置
  */
-const NEWAPI_DEFAULT_MODELS: UniversalProviderModels = {
+const CUSTOM_GATEWAY_DEFAULT_MODELS: UniversalProviderModels = {
   claude: {
     model: "claude-sonnet-4-6",
     haikuModel: "claude-haiku-4-5-20251001",
@@ -60,21 +60,6 @@ const NEWAPI_DEFAULT_MODELS: UniversalProviderModels = {
  */
 export const universalProviderPresets: UniversalProviderPreset[] = [
   {
-    name: "NewAPI",
-    providerType: "newapi",
-    defaultApps: {
-      claude: true,
-      codex: true,
-      gemini: true,
-    },
-    defaultModels: NEWAPI_DEFAULT_MODELS,
-    websiteUrl: "https://www.newapi.pro",
-    icon: "newapi",
-    iconColor: "#00A67E",
-    description:
-      "NewAPI 是一个可自部署的 API 网关，支持 Anthropic、OpenAI、Gemini 等多种协议",
-  },
-  {
     name: "自定义网关",
     providerType: "custom_gateway",
     defaultApps: {
@@ -82,7 +67,7 @@ export const universalProviderPresets: UniversalProviderPreset[] = [
       codex: true,
       gemini: true,
     },
-    defaultModels: NEWAPI_DEFAULT_MODELS,
+    defaultModels: CUSTOM_GATEWAY_DEFAULT_MODELS,
     icon: "openai",
     iconColor: "#6366F1",
     description: "自定义配置的 API 网关",
