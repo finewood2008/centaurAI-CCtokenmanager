@@ -1,10 +1,10 @@
 [package]
-name = "cc-switch"
+name = "token-manager"
 version = "3.16.2"
-description = "All-in-One Assistant for Claude Code, Codex & Gemini CLI"
+description = "CentaurAI desktop key and provider manager for AI coding tools"
 authors = ["Jason Young"]
 license = "MIT"
-repository = "https://github.com/farion1231/cc-switch"
+repository = "https://github.com/finewood2008/centaurAI-CCtokenmanager"
 edition = "2021"
 rust-version = "1.85.0"
 
