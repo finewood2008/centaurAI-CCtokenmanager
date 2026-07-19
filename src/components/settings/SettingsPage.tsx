@@ -53,12 +53,16 @@ import { useSettings } from "@/hooks/useSettings";
 import { useImportExport } from "@/hooks/useImportExport";
 import { useTranslation } from "react-i18next";
 import type { SettingsFormState } from "@/hooks/useSettings";
+import type { SettingsTab } from "@/components/layout/AppSidebar";
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onImportSuccess?: () => void | Promise<void>;
-  defaultTab?: string;
+  defaultTab?: SettingsTab;
+  activeTab?: SettingsTab;
+  onTabChange?: (tab: SettingsTab) => void;
+  showNavigation?: boolean;
 }
 
 export function SettingsPage({
@@ -66,6 +70,9 @@ export function SettingsPage({
   onOpenChange,
   onImportSuccess,
   defaultTab = "general",
+  activeTab: controlledActiveTab,
+  onTabChange,
+  showNavigation = true,
 }: SettingsDialogProps) {
   const { t } = useTranslation();
   const {
@@ -103,15 +110,29 @@ export function SettingsPage({
 
   const { data: installedSkills } = useInstalledSkills();
 
-  const [activeTab, setActiveTab] = useState<string>("general");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("general");
   const [showRestartPrompt, setShowRestartPrompt] = useState(false);
+  const selectedTab = controlledActiveTab ?? activeTab;
 
   useEffect(() => {
     if (open) {
-      setActiveTab(defaultTab);
+      if (controlledActiveTab === undefined) {
+        setActiveTab(defaultTab);
+      }
       resetStatus();
     }
-  }, [open, resetStatus, defaultTab]);
+  }, [open, resetStatus, defaultTab, controlledActiveTab]);
+
+  const handleTabChange = useCallback(
+    (tab: string) => {
+      const nextTab = tab as SettingsTab;
+      if (controlledActiveTab === undefined) {
+        setActiveTab(nextTab);
+      }
+      onTabChange?.(nextTab);
+    },
+    [controlledActiveTab, onTabChange],
+  );
 
   useEffect(() => {
     if (requiresRestart) {
@@ -194,27 +215,29 @@ export function SettingsPage({
         </div>
       ) : (
         <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
+          value={selectedTab}
+          onValueChange={handleTabChange}
           className="flex flex-col h-full"
         >
-          <TabsList className="grid w-full grid-cols-7 mb-6 glass rounded-lg">
-            <TabsTrigger value="general">
-              {t("settings.tabGeneral")}
-            </TabsTrigger>
-            <TabsTrigger value="proxy">{t("settings.tabProxy")}</TabsTrigger>
-            <TabsTrigger value="auth">
-              {t("settings.tabAuth", { defaultValue: "认证" })}
-            </TabsTrigger>
-            <TabsTrigger value="advanced">
-              {t("settings.tabAdvanced")}
-            </TabsTrigger>
-            <TabsTrigger value="usage">{t("usage.title")}</TabsTrigger>
-            <TabsTrigger value="environment">
-              {t("settings.tabEnvironment")}
-            </TabsTrigger>
-            <TabsTrigger value="about">{t("common.about")}</TabsTrigger>
-          </TabsList>
+          {showNavigation && (
+            <TabsList className="grid w-full grid-cols-7 mb-6 glass rounded-lg">
+              <TabsTrigger value="general">
+                {t("settings.tabGeneral")}
+              </TabsTrigger>
+              <TabsTrigger value="proxy">{t("settings.tabProxy")}</TabsTrigger>
+              <TabsTrigger value="auth">
+                {t("settings.tabAuth", { defaultValue: "认证" })}
+              </TabsTrigger>
+              <TabsTrigger value="advanced">
+                {t("settings.tabAdvanced")}
+              </TabsTrigger>
+              <TabsTrigger value="usage">{t("usage.title")}</TabsTrigger>
+              <TabsTrigger value="environment">
+                {t("settings.tabEnvironment")}
+              </TabsTrigger>
+              <TabsTrigger value="about">{t("common.about")}</TabsTrigger>
+            </TabsList>
+          )}
 
           <div className="flex-1 min-h-0 flex flex-col">
             <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2">
@@ -482,16 +505,17 @@ export function SettingsPage({
 
               <TabsContent value="environment" className="mt-0 pb-4">
                 <ToolEnvironmentSection
-                  isActive={open && activeTab === "environment"}
+                  isActive={open && selectedTab === "environment"}
                 />
               </TabsContent>
 
               <TabsContent value="usage" className="mt-0">
                 <UsageDashboard />
               </TabsContent>
+
             </div>
 
-            {activeTab === "advanced" && settings && (
+            {selectedTab === "advanced" && settings && (
               <div
                 className="flex-shrink-0 pt-4 border-t border-border-default"
                 style={{ backgroundColor: "hsl(var(--background))" }}
