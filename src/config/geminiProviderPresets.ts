@@ -31,7 +31,21 @@ export interface GeminiProviderPreset {
   iconColor?: string; // 图标颜色
 }
 
-export const geminiProviderPresets: GeminiProviderPreset[] = [];
+export const geminiProviderPresets: GeminiProviderPreset[] = [
+  {
+    name: "Google Gemini",
+    websiteUrl: "https://aistudio.google.com/apikey",
+    apiKeyUrl: "https://aistudio.google.com/apikey",
+    settingsConfig: {},
+    baseURL: "https://generativelanguage.googleapis.com",
+    model: "gemini-flash-latest",
+    description: "Google 官方 Gemini API — 支持 gemini-flash-latest 等模型",
+    category: "official" as ProviderCategory,
+    endpointCandidates: ["https://generativelanguage.googleapis.com"],
+    icon: "gemini",
+    iconColor: "#4285F4",
+  },
+];
 
 export function getGeminiPresetByName(
   name: string,
