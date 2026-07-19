@@ -42,6 +42,15 @@
     "enabled": "有効",
     "notSet": "未設定"
   },
+  "navigation": {
+    "workbench": "ワークベンチ",
+    "tools": "ツール",
+    "backToWorkbench": "ワークベンチに戻る",
+    "expandSidebar": "サイドバーを展開",
+    "collapseSidebar": "サイドバーを折りたたむ",
+    "proxyActive": "ローカルルーティング実行中",
+    "providerWorkspace": "キーとエンドポイント管理"
+  },
   "firstRunNotice": {
     "title": "TOKEN MANAGER へようこそ",
     "bodyDefault": "TOKEN MANAGER は Claude Code / Codex / Gemini CLI の複数プロバイダーをワンクリックで切り替えられるツールです。すでにこれらのツールを設定済みの場合、TOKEN MANAGER は現在の設定を「default」という名前のプロバイダーとして自動的に保存するので、既存の設定が失われることはありません。",
