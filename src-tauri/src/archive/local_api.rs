@@ -335,9 +335,9 @@ pub fn start(archive: Arc<ArchiveService>) {
             .route("/v1/health", get(health))
             .route("/v1/adapters", get(adapters))
             .route("/v1/conversations/changes", get(changes))
-            .route("/v1/conversations/:id", get(detail))
+            .route("/v1/conversations/{id}", get(detail))
             .route("/v1/memories/changes", get(memory_changes))
-            .route("/v1/memories/:id", get(memory_detail))
+            .route("/v1/memories/{id}", get(memory_detail))
             .route("/v1/identity/status", get(identity_status))
             .route("/v1/identity", put(identity_apply))
             .with_state(ApiState { archive });
