@@ -86,9 +86,28 @@
   }
 
   .centaur-header {
-    background: hsl(var(--card) / 0.9);
+    background: hsl(var(--card) / 0.88);
     border-bottom: 1px solid hsl(var(--border));
     box-shadow: 0 12px 36px -30px hsl(var(--brand-shadow) / 0.6);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .centaur-sidebar {
+    background:
+      linear-gradient(
+        180deg,
+        hsl(var(--card) / 0.98),
+        hsl(var(--brand-surface-soft) / 0.94)
+      ),
+      hsl(var(--card));
+    box-shadow: 18px 0 48px -44px hsl(var(--brand-shadow) / 0.6);
+  }
+
+  .centaur-page-toolbar {
+    background: hsl(var(--background) / 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
 
   .centaur-surface {

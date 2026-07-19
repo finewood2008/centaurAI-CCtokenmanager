@@ -59,13 +59,16 @@ import UsageScriptModal from "@/components/UsageScriptModal";
 import { DeepLinkImportDialog } from "@/components/DeepLinkImportDialog";
 import { FirstRunNoticeDialog } from "@/components/FirstRunNoticeDialog";
 import { Button } from "@/components/ui/button";
-import { ProviderToolsMenu } from "@/components/ProviderToolsMenu";
+import {
+  AppSidebar,
+  type AppView,
+  type SettingsTab,
+} from "@/components/layout/AppSidebar";
 import {
   useDisableCurrentOmo,
   useDisableCurrentOmoSlim,
 } from "@/lib/query/omo";
 import OpenClawHealthBanner from "@/components/openclaw/OpenClawHealthBanner";
-import tokenManagerLogo from "@/assets/icons/app-icon.png";
 
 const SettingsPage = lazy(() =>
   import("@/components/settings/SettingsPage").then((module) => ({
@@ -109,20 +112,6 @@ const HermesMemoryPanel = lazy(
   () => import("@/components/hermes/HermesMemoryPanel"),
 );
 
-type View =
-  | "providers"
-  | "settings"
-  | "prompts"
-  | "skills"
-  | "skillsDiscovery"
-  | "mcp"
-  | "sessions"
-  | "workspace"
-  | "openclawEnv"
-  | "openclawTools"
-  | "openclawAgents"
-  | "hermesMemory";
-
 interface SyncStatusUpdatedPayload {
   source?: string;
   status?: string;
@@ -152,7 +141,8 @@ const getInitialApp = (): AppId => {
 };
 
 const VIEW_STORAGE_KEY = "cc-switch-last-view";
-const VALID_VIEWS: View[] = [
+const SIDEBAR_STORAGE_KEY = "token-manager-sidebar-collapsed";
+const VALID_VIEWS: AppView[] = [
   "providers",
   "settings",
   "prompts",
@@ -167,13 +157,16 @@ const VALID_VIEWS: View[] = [
   "hermesMemory",
 ];
 
-const getInitialView = (): View => {
-  const saved = localStorage.getItem(VIEW_STORAGE_KEY) as View | null;
+const getInitialView = (): AppView => {
+  const saved = localStorage.getItem(VIEW_STORAGE_KEY) as AppView | null;
   if (saved && VALID_VIEWS.includes(saved)) {
     return saved;
   }
   return "providers";
 };
+
+const getInitialSidebarCollapsed = () =>
+  localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
 
 function App() {
   const { t } = useTranslation();
@@ -182,8 +175,11 @@ function App() {
   const [activeApp, setActiveApp] = useState<AppId>(getInitialApp);
   const sharedFeatureApp: AppId =
     activeApp === "claude-desktop" ? "claude" : activeApp;
-  const [currentView, setCurrentView] = useState<View>(getInitialView);
-  const [settingsDefaultTab, setSettingsDefaultTab] = useState("general");
+  const [currentView, setCurrentView] = useState<AppView>(getInitialView);
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>("general");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
+    getInitialSidebarCollapsed,
+  );
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isWindowMaximized, setIsWindowMaximized] = useState(false);
 
@@ -191,11 +187,17 @@ function App() {
     localStorage.setItem(VIEW_STORAGE_KEY, currentView);
   }, [currentView]);
 
+  useEffect(() => {
+    localStorage.setItem(
+      SIDEBAR_STORAGE_KEY,
+      isSidebarCollapsed ? "true" : "false",
+    );
+  }, [isSidebarCollapsed]);
+
   const { data: settingsData } = useSettingsQuery();
   const useAppWindowControls =
     isLinux() && (settingsData?.useAppWindowControls ?? false);
   const dragBarHeight = useAppWindowControls ? 32 : DEFAULT_DRAG_BAR_HEIGHT;
-  const contentTopOffset = dragBarHeight + HEADER_HEIGHT;
   const visibleApps: VisibleApps = settingsData?.visibleApps ?? {
     claude: true,
     "claude-desktop": true,
@@ -259,7 +261,6 @@ function App() {
   const mcpPanelRef = useRef<any>(null);
   const skillsPageRef = useRef<any>(null);
   const unifiedSkillsPanelRef = useRef<any>(null);
-  const addActionButtonClass = "rounded-xl h-9 w-9 shadow-md shadow-primary/20";
 
   const {
     isRunning: isProxyRunning,
@@ -585,6 +586,7 @@ function App() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "," && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
+        setSettingsTab("general");
         setCurrentView("settings");
         return;
       }
@@ -870,6 +872,186 @@ function App() {
     }
   };
 
+  const getSettingsTabTitle = (tab: SettingsTab) => {
+    switch (tab) {
+      case "proxy":
+        return t("settings.tabProxy");
+      case "auth":
+        return t("settings.tabAuth", { defaultValue: "认证" });
+      case "advanced":
+        return t("settings.tabAdvanced");
+      case "usage":
+        return t("usage.title");
+      case "environment":
+        return t("settings.tabEnvironment");
+      case "about":
+        return t("common.about");
+      default:
+        return t("settings.tabGeneral");
+    }
+  };
+
+  const getCurrentViewTitle = () => {
+    switch (currentView) {
+      case "prompts":
+        return t("prompts.title", {
+          appName: t(`apps.${sharedFeatureApp}`),
+        });
+      case "skills":
+        return t("skills.title");
+      case "skillsDiscovery":
+        return t("skills.discover");
+      case "mcp":
+        return t("mcp.unifiedPanel.title");
+      case "sessions":
+        return t("sessionManager.title");
+      case "workspace":
+        return t("workspace.title");
+      case "openclawEnv":
+        return t("openclaw.env.title");
+      case "openclawTools":
+        return t("openclaw.tools.title");
+      case "openclawAgents":
+        return t("openclaw.agents.title");
+      case "hermesMemory":
+        return t("hermes.memory.title");
+      default:
+        return "";
+    }
+  };
+
+  const renderContextToolbar = () => {
+    if (currentView === "providers" || currentView === "settings") return null;
+
+    return (
+      <div className="centaur-page-toolbar flex min-h-16 shrink-0 items-center justify-between gap-4 border-b border-border px-6 py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          {currentView === "skillsDiscovery" && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentView("skills")}
+              className="h-9 w-9 shrink-0 rounded-xl"
+              aria-label={t("common.back")}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          )}
+          <div className="min-w-0">
+            <p className="centaur-eyebrow text-[9px]">
+              {t("navigation.tools", { defaultValue: "工具" })}
+            </p>
+            <h1 className="centaur-title mt-1 truncate text-lg">
+              {getCurrentViewTitle()}
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex max-w-[72%] shrink-0 flex-wrap items-center justify-end gap-1.5">
+          {currentView === "prompts" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => promptPanelRef.current?.openAdd()}
+              className="rounded-xl"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {t("prompts.add")}
+            </Button>
+          )}
+          {currentView === "mcp" && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => mcpPanelRef.current?.openImport()}
+                className="rounded-xl"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {t("mcp.importExisting")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => mcpPanelRef.current?.openAdd()}
+                className="rounded-xl"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                {t("mcp.addMcp")}
+              </Button>
+            </>
+          )}
+          {currentView === "skills" && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  unifiedSkillsPanelRef.current?.openRestoreFromBackup()
+                }
+                className="rounded-xl"
+              >
+                <History className="mr-2 h-4 w-4" />
+                {t("skills.restoreFromBackup.button")}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  unifiedSkillsPanelRef.current?.openInstallFromZip()
+                }
+                className="rounded-xl"
+              >
+                <FolderArchive className="mr-2 h-4 w-4" />
+                {t("skills.installFromZip.button")}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => unifiedSkillsPanelRef.current?.openImport()}
+                className="rounded-xl"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {t("skills.import")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentView("skillsDiscovery")}
+                className="rounded-xl"
+              >
+                <Search className="mr-2 h-4 w-4" />
+                {t("skills.discover")}
+              </Button>
+            </>
+          )}
+          {currentView === "skillsDiscovery" && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => skillsPageRef.current?.refresh()}
+                className="rounded-xl"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                {t("skills.refresh")}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => skillsPageRef.current?.openRepoManager()}
+                className="rounded-xl"
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                {t("skills.repoManager")}
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderContent = () => {
     const content = (() => {
       switch (currentView) {
@@ -879,7 +1061,9 @@ function App() {
               open={true}
               onOpenChange={() => setCurrentView("providers")}
               onImportSuccess={handleImportSuccess}
-              defaultTab={settingsDefaultTab}
+              activeTab={settingsTab}
+              onTabChange={setSettingsTab}
+              showNavigation={false}
             />
           );
         case "prompts":
@@ -947,14 +1131,16 @@ function App() {
                     transition={{ duration: 0.15 }}
                     className="space-y-5"
                   >
-                    <section className="centaur-surface relative overflow-hidden px-6 py-5">
+                    <section className="centaur-surface relative overflow-hidden px-5 py-4">
                       <div className="centaur-rail absolute inset-x-0 top-0 h-[3px]" />
                       <div className="flex items-end justify-between gap-4">
                         <div>
                           <p className="centaur-eyebrow">
-                            Key & endpoint management
+                            {t("navigation.providerWorkspace", {
+                              defaultValue: "密钥与端点管理",
+                            })}
                           </p>
-                          <h2 className="centaur-title mt-1 text-2xl">
+                          <h2 className="centaur-title mt-1 text-[22px]">
                             {t(`apps.${activeApp}`)}
                           </h2>
                           <p className="mt-1 text-sm text-muted-foreground">
@@ -1045,7 +1231,7 @@ function App() {
   return (
     <div
       className="centaur-shell flex h-screen flex-col overflow-hidden text-foreground selection:bg-primary/25"
-      style={{ overflowX: "hidden", paddingTop: contentTopOffset }}
+      style={{ overflowX: "hidden", paddingTop: dragBarHeight }}
     >
       {(dragBarHeight > 0 || useAppWindowControls) && (
         <div
@@ -1122,286 +1308,119 @@ function App() {
         />
       )}
 
-      <header
-        className="centaur-header fixed z-50 w-full backdrop-blur-xl transition-all duration-300"
-        {...DRAG_REGION_ATTR}
-        style={
-          {
-            ...DRAG_REGION_STYLE,
-            top: dragBarHeight,
-            height: HEADER_HEIGHT,
-          } as any
-        }
-      >
-        <div
-          className="flex h-full items-center justify-between gap-4 px-5"
-          {...DRAG_REGION_ATTR}
-          style={{ ...DRAG_REGION_STYLE } as any}
-        >
-          <div
-            className="flex items-center gap-1"
-            style={{ WebkitAppRegion: "no-drag" } as any}
+      <div className="flex min-h-0 flex-1">
+        <AppSidebar
+          activeApp={activeApp}
+          currentView={currentView}
+          settingsTab={settingsTab}
+          collapsed={isSidebarCollapsed}
+          hasSkillsSupport={hasSkillsSupport}
+          hasSessionSupport={hasSessionSupport}
+          isProxyActive={isProxyRunning && isCurrentAppTakeoverActive}
+          onCollapsedChange={setIsSidebarCollapsed}
+          onNavigate={(view) => {
+            if (view === "settings") setSettingsTab("general");
+            setCurrentView(view);
+          }}
+          onSettingsTabChange={setSettingsTab}
+          onAddProvider={() => setIsAddOpen(true)}
+          onOpenHermesWebUI={() => void openHermesWebUI()}
+        />
+
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          <header
+            className="centaur-header relative z-30 flex shrink-0 items-center px-5"
+            {...DRAG_REGION_ATTR}
+            style={{ ...DRAG_REGION_STYLE, height: HEADER_HEIGHT } as any}
           >
-            <img
-              src={tokenManagerLogo}
-              alt="TOKEN MANAGER"
-              draggable={false}
-              className="mr-2 h-10 w-10 shrink-0 rounded-xl object-cover shadow-md shadow-primary/10 ring-1 ring-border"
-            />
-            {currentView !== "providers" ? (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() =>
-                    setCurrentView(
-                      currentView === "skillsDiscovery"
-                        ? "skills"
-                        : "providers",
-                    )
-                  }
-                  className="mr-2 rounded-lg"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </Button>
-                <h1 className="centaur-title text-lg">
-                  {currentView === "settings" && t("settings.title")}
-                  {currentView === "prompts" &&
-                    t("prompts.title", {
-                      appName: t(`apps.${sharedFeatureApp}`),
-                    })}
-                  {currentView === "skills" && t("skills.title")}
-                  {currentView === "skillsDiscovery" && t("skills.title")}
-                  {currentView === "mcp" && t("mcp.unifiedPanel.title")}
-                  {currentView === "sessions" && t("sessionManager.title")}
-                  {currentView === "workspace" && t("workspace.title")}
-                  {currentView === "openclawEnv" && t("openclaw.env.title")}
-                  {currentView === "openclawTools" && t("openclaw.tools.title")}
-                  {currentView === "openclawAgents" &&
-                    t("openclaw.agents.title")}
-                  {currentView === "hermesMemory" && t("hermes.memory.title")}
+            {currentView === "settings" ? (
+              <div className="min-w-0 select-none">
+                <p className="centaur-eyebrow text-[9px]">
+                  {t("common.settings")}
+                </p>
+                <h1 className="centaur-title mt-1 truncate text-lg">
+                  {getSettingsTabTitle(settingsTab)}
                 </h1>
               </div>
             ) : (
-              <div className="flex items-center gap-2.5">
-                <div className="relative flex flex-col leading-none">
-                  <span className="centaur-eyebrow text-[9px]">CentaurAI</span>
-                  <span className="centaur-title mt-1 text-lg">
-                    TOKEN MANAGER
-                  </span>
-                  {isProxyRunning && isCurrentAppTakeoverActive && (
-                    <span className="absolute -right-3 top-0 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-card" />
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    setSettingsDefaultTab("general");
-                    setCurrentView("settings");
-                  }}
-                  title={t("common.settings")}
-                  className="ml-1"
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <div
+                  ref={toolbarRef}
+                  className="flex min-w-0 flex-1 items-center overflow-x-hidden"
+                  style={{ WebkitAppRegion: "no-drag" } as any}
                 >
-                  <Settings className="w-4 h-4" />
-                </Button>
-                {isCurrentAppTakeoverActive && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setSettingsDefaultTab("usage");
-                      setCurrentView("settings");
-                    }}
-                    title={t("usage.title", {
-                      defaultValue: "使用统计",
-                    })}
-                    className=""
-                  >
-                    <BarChart2 className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
+                  <AppSwitcher
+                    activeApp={activeApp}
+                    onSwitch={setActiveApp}
+                    visibleApps={visibleApps}
+                    compact={isToolbarCompact}
+                  />
+                </div>
 
-          <div className="flex flex-1 min-w-0 items-center justify-end gap-1.5">
-            {currentView === "providers" &&
-              activeApp !== "opencode" &&
-              activeApp !== "openclaw" &&
-              activeApp !== "hermes" && (
                 <div
                   className="flex shrink-0 items-center gap-1.5"
                   style={{ WebkitAppRegion: "no-drag" } as any}
                 >
-                  {activeApp === "claude-desktop" ? (
-                    <ClaudeDesktopRouteToggle />
-                  ) : (
-                    settingsData?.enableLocalProxy && (
-                      <ProxyToggle activeApp={activeApp} />
-                    )
-                  )}
-                  {activeApp !== "claude-desktop" &&
-                    settingsData?.enableFailoverToggle && (
-                      <FailoverToggle activeApp={activeApp} />
+                  {currentView === "providers" &&
+                    activeApp !== "opencode" &&
+                    activeApp !== "openclaw" &&
+                    activeApp !== "hermes" && (
+                      <>
+                        {activeApp === "claude-desktop" ? (
+                          <ClaudeDesktopRouteToggle />
+                        ) : (
+                          settingsData?.enableLocalProxy && (
+                            <ProxyToggle activeApp={activeApp} />
+                          )
+                        )}
+                        {activeApp !== "claude-desktop" &&
+                          settingsData?.enableFailoverToggle && (
+                            <FailoverToggle activeApp={activeApp} />
+                          )}
+                      </>
+                    )}
+                  {currentView === "providers" &&
+                    isCurrentAppTakeoverActive && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setSettingsTab("usage");
+                          setCurrentView("settings");
+                        }}
+                        title={t("usage.title", {
+                          defaultValue: "使用统计",
+                        })}
+                        aria-label={t("usage.title", {
+                          defaultValue: "使用统计",
+                        })}
+                        className="h-9 w-9 rounded-xl"
+                      >
+                        <BarChart2 className="h-4 w-4" />
+                      </Button>
                     )}
                 </div>
-              )}
-            <div
-              ref={toolbarRef}
-              className="flex min-w-0 flex-1 items-center overflow-x-hidden pr-1"
-            >
-              <div
-                className="flex shrink-0 items-center gap-1.5 ml-auto"
-                style={{ WebkitAppRegion: "no-drag" } as any}
-              >
-                {currentView === "prompts" && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => promptPanelRef.current?.openAdd()}
-                    className="hover:bg-black/5 dark:hover:bg-white/5"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {t("prompts.add")}
-                  </Button>
-                )}
-                {currentView === "mcp" && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => mcpPanelRef.current?.openImport()}
-                      className="hover:bg-black/5 dark:hover:bg-white/5"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      {t("mcp.importExisting")}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => mcpPanelRef.current?.openAdd()}
-                      className="hover:bg-black/5 dark:hover:bg-white/5"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      {t("mcp.addMcp")}
-                    </Button>
-                  </>
-                )}
-                {currentView === "skills" && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        unifiedSkillsPanelRef.current?.openRestoreFromBackup()
-                      }
-                      className="hover:bg-black/5 dark:hover:bg-white/5"
-                    >
-                      <History className="w-4 h-4 mr-2" />
-                      {t("skills.restoreFromBackup.button")}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        unifiedSkillsPanelRef.current?.openInstallFromZip()
-                      }
-                      className="hover:bg-black/5 dark:hover:bg-white/5"
-                    >
-                      <FolderArchive className="w-4 h-4 mr-2" />
-                      {t("skills.installFromZip.button")}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        unifiedSkillsPanelRef.current?.openImport()
-                      }
-                      className="hover:bg-black/5 dark:hover:bg-white/5"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      {t("skills.import")}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setCurrentView("skillsDiscovery")}
-                      className="hover:bg-black/5 dark:hover:bg-white/5"
-                    >
-                      <Search className="w-4 h-4 mr-2" />
-                      {t("skills.discover")}
-                    </Button>
-                  </>
-                )}
-                {currentView === "skillsDiscovery" && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => skillsPageRef.current?.refresh()}
-                      className="hover:bg-black/5 dark:hover:bg-white/5"
-                    >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      {t("skills.refresh")}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => skillsPageRef.current?.openRepoManager()}
-                      className="hover:bg-black/5 dark:hover:bg-white/5"
-                    >
-                      <Settings className="w-4 h-4 mr-2" />
-                      {t("skills.repoManager")}
-                    </Button>
-                  </>
-                )}
-                {currentView === "providers" && (
-                  <>
-                    <AppSwitcher
-                      activeApp={activeApp}
-                      onSwitch={setActiveApp}
-                      visibleApps={visibleApps}
-                      compact={isToolbarCompact}
-                    />
-
-                    <ProviderToolsMenu
-                      activeApp={activeApp}
-                      hasSkillsSupport={hasSkillsSupport}
-                      hasSessionSupport={hasSessionSupport}
-                      onOpenView={setCurrentView}
-                      onOpenHermesWebUI={() => void openHermesWebUI()}
-                    />
-
-                    <Button
-                      onClick={() => setIsAddOpen(true)}
-                      size="icon"
-                      className={`ml-1 ${addActionButtonClass}`}
-                    >
-                      <Plus className="w-5 h-5" />
-                    </Button>
-                  </>
-                )}
               </div>
-            </div>
-          </div>
-        </div>
-      </header>
+            )}
+          </header>
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto animate-fade-in">
-        {isOpenClawView && openclawHealthWarnings.length > 0 && (
-          <OpenClawHealthBanner warnings={openclawHealthWarnings} />
-        )}
-        <Suspense
-          fallback={
-            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-              {t("common.loading", { defaultValue: "加载中…" })}
-            </div>
-          }
-        >
-          {renderContent()}
-        </Suspense>
-      </main>
+          <main className="flex min-h-0 flex-1 flex-col overflow-hidden animate-fade-in">
+            {isOpenClawView && openclawHealthWarnings.length > 0 && (
+              <OpenClawHealthBanner warnings={openclawHealthWarnings} />
+            )}
+            {renderContextToolbar()}
+            <Suspense
+              fallback={
+                <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+                  {t("common.loading", { defaultValue: "加载中…" })}
+                </div>
+              }
+            >
+              {renderContent()}
+            </Suspense>
+          </main>
+        </div>
+      </div>
 
       <Suspense fallback={null}>
         {isAddOpen && (

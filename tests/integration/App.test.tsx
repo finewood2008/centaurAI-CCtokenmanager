@@ -159,8 +159,30 @@ const renderApp = (AppComponent: ComponentType) => {
 describe("App integration with MSW", () => {
   beforeEach(() => {
     resetProviderState();
+    window.localStorage.removeItem("token-manager-sidebar-collapsed");
     toastSuccessMock.mockReset();
     toastErrorMock.mockReset();
+  });
+
+  it("persists the collapsed sidebar preference", async () => {
+    const { default: App } = await import("@/App");
+    renderApp(App);
+
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: /navigation\.collapseSidebar|折叠侧边栏/,
+      }),
+    );
+
+    await waitFor(() =>
+      expect(
+        window.localStorage.getItem("token-manager-sidebar-collapsed"),
+      ).toBe("true"),
+    );
+    expect(screen.getByTestId("app-sidebar")).toHaveAttribute(
+      "data-collapsed",
+      "true",
+    );
   });
 
   it("covers basic provider flows via real hooks", async () => {

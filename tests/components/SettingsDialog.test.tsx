@@ -347,9 +347,7 @@ describe("SettingsPage Component", () => {
     fireEvent.click(screen.getByText("settings.advanced.data.title"));
 
     // 有文件时，点击导入按钮执行 importConfig
-    fireEvent.click(
-      screen.getByRole("button", { name: /settings\.import/ }),
-    );
+    fireEvent.click(screen.getByRole("button", { name: /settings\.import/ }));
     expect(importExportMock.importConfig).toHaveBeenCalled();
 
     fireEvent.click(
@@ -360,6 +358,22 @@ describe("SettingsPage Component", () => {
     // 清除选择按钮
     fireEvent.click(screen.getByRole("button", { name: "common.clear" }));
     expect(importExportMock.clearSelection).toHaveBeenCalled();
+  });
+
+  it("supports externally controlled navigation without rendering top tabs", () => {
+    renderSettingsPage({
+      activeTab: "advanced",
+      onTabChange: vi.fn(),
+      showNavigation: false,
+    });
+
+    expect(screen.queryByText("settings.tabGeneral")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("settings.advanced.configDir.title"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /common\.save/ }),
+    ).toBeInTheDocument();
   });
 
   it("should pass onImportSuccess callback to useImportExport hook", async () => {

@@ -67,7 +67,7 @@ export function AppSwitcher({
   });
 
   return (
-    <div className="inline-flex gap-1 rounded-[14px] border border-border bg-secondary/65 p-1 shadow-inner shadow-black/[0.025]">
+    <div className="inline-flex gap-1">
       {appsToShow.map((app) => {
         const badgeConfig = APP_BADGE_ICON[app];
         const BadgeIcon = badgeConfig?.icon;
@@ -78,12 +78,15 @@ export function AppSwitcher({
             type="button"
             onClick={() => handleSwitch(app)}
             className={cn(
-              "group inline-flex h-9 items-center rounded-[10px] px-3 text-sm font-semibold transition-all duration-200",
+              "group relative inline-flex h-10 items-center rounded-xl px-3 text-sm font-semibold transition-all duration-200 motion-reduce:transition-none",
               isActive
-                ? "bg-card text-primary shadow-sm ring-1 ring-border"
-                : "text-muted-foreground hover:bg-card/60 hover:text-foreground",
+                ? "bg-accent text-accent-foreground shadow-sm ring-1 ring-primary/15"
+                : "text-muted-foreground hover:bg-secondary/75 hover:text-foreground",
             )}
           >
+            {isActive && (
+              <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" />
+            )}
             <span className="relative inline-flex shrink-0">
               <ProviderIcon
                 icon={appIconName[app]}
@@ -95,7 +98,7 @@ export function AppSwitcher({
                   className={cn(
                     "absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-[3px] border h-[11px] w-[11px]",
                     isActive
-                      ? "bg-card border-primary/30 text-primary"
+                      ? "bg-accent border-primary/30 text-primary"
                       : "bg-secondary border-card text-muted-foreground group-hover:bg-card group-hover:text-foreground",
                   )}
                   aria-hidden="true"

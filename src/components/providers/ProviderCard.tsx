@@ -297,7 +297,7 @@ export function ProviderCard({
   return (
     <div
       className={cn(
-        "centaur-lift group relative overflow-hidden rounded-[18px] border border-border bg-card/95 p-5 text-card-foreground",
+        "centaur-lift group relative overflow-hidden rounded-2xl border border-border bg-card/95 p-4 text-card-foreground",
         isAutoFailoverEnabled || isProxyTakeover
           ? "hover:border-emerald-500/50"
           : "hover:border-primary/40",
@@ -329,7 +329,7 @@ export function ProviderCard({
             : "opacity-0 group-hover:opacity-60",
         )}
       />
-      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-2">
           <button
             type="button"
@@ -345,7 +345,7 @@ export function ProviderCard({
             <GripVertical className="h-4 w-4" />
           </button>
 
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary/65 shadow-sm transition-transform duration-300 group-hover:scale-105">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary/65 shadow-sm transition-transform duration-200 group-hover:scale-105 motion-reduce:transition-none">
             <ProviderIcon
               icon={provider.icon}
               name={provider.name}
