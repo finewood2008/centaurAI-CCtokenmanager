@@ -305,6 +305,95 @@ export interface S3SyncSettings {
   status?: WebDavSyncStatus;
 }
 
+export interface ArchiveOidcSettings {
+  issuer: string;
+  audience: string;
+  jwksUrl: string;
+  allowedAlgorithms: string[];
+  nameClaim: string;
+  emailClaim: string;
+  organizationClaim: string;
+}
+
+export interface ArchiveRedactionRule {
+  name: string;
+  pattern: string;
+  enabled: boolean;
+}
+
+export interface ArchiveLocalBackupSettings {
+  enabled: boolean;
+  directory?: string;
+  minIntervalMinutes: number;
+  retainCount: number;
+  includeKey: boolean;
+}
+
+export interface ArchiveLocalHistorySettings {
+  autoImportEnabled: boolean;
+  memoryImportEnabled: boolean;
+  apiEnabled: boolean;
+  identityWriteEnabled: boolean;
+  reconcileIntervalSeconds: number;
+}
+
+export interface ArchiveSettings {
+  enabled: boolean;
+  oidc: ArchiveOidcSettings;
+  redactionRules: ArchiveRedactionRule[];
+  localBackup: ArchiveLocalBackupSettings;
+  localHistory: ArchiveLocalHistorySettings;
+}
+
+export interface SessionAdapterInfo {
+  id: string;
+  displayName: string;
+  kind: "builtin" | "process" | string;
+  enabled: boolean;
+  capabilities: string[];
+  watchPaths: string[];
+  error?: string;
+}
+
+export interface LocalConversationApiStatus {
+  enabled: boolean;
+  url: string;
+  tokenConfigured: boolean;
+  autoImportEnabled: boolean;
+  memoryImportEnabled: boolean;
+  identityWriteEnabled: boolean;
+  capabilities: string[];
+  runtime: {
+    running: boolean;
+    lastStartedAt?: number;
+    lastCompletedAt?: number;
+    lastImported: number;
+    lastSkipped: number;
+    lastFailed: number;
+    lastError?: string;
+  };
+  memoryRuntime: {
+    running: boolean;
+    lastStartedAt?: number;
+    lastCompletedAt?: number;
+    lastImported: number;
+    lastSkipped: number;
+    lastDeleted: number;
+    lastFailed: number;
+    lastError?: string;
+    providers: Array<{
+      provider: string;
+      discovered: number;
+      imported: number;
+      skipped: number;
+      failed: number;
+      lastCompletedAt?: number;
+      lastError?: string;
+    }>;
+  };
+  adapters: SessionAdapterInfo[];
+}
+
 export type RemoteSnapshotLayout = "current" | "legacy";
 
 // 远端快照信息（下载前预览）
@@ -401,6 +490,9 @@ export interface Settings {
   // ===== S3 同步设置 =====
   s3Sync?: S3SyncSettings;
 
+  // ===== 多用户对话归档 =====
+  archive?: ArchiveSettings;
+
   // ===== 备份策略设置 =====
   // Auto-backup interval in hours (0=disabled, default 24)
   backupIntervalHours?: number;
@@ -442,6 +534,150 @@ export interface SessionMessage {
   role: string;
   content: string;
   ts?: number;
+}
+
+export interface ArchiveHealth {
+  enabled: boolean;
+  ready: boolean;
+  keyConfigured: boolean;
+  databaseOk: boolean;
+  ftsOk: boolean;
+  oidcConfigured: boolean;
+  oidcOk: boolean;
+  localBackupEnabled: boolean;
+  localBackupOk: boolean;
+  localBackupDirectory?: string;
+  lastLocalBackupAt?: number;
+  localBackupWarning?: string;
+  keySource?: string;
+  databasePath?: string;
+  databaseSizeBytes: number;
+  error?: string;
+}
+
+export interface ArchiveInitializationResult {
+  keyCreated: boolean;
+  keySource: string;
+  databaseCreated: boolean;
+  enabled: boolean;
+  pendingRequirements: string[];
+  warnings: string[];
+  health: ArchiveHealth;
+  archiveSettings: ArchiveSettings;
+}
+
+export interface ArchiveLocalSnapshotSummary {
+  id: string;
+  createdAt: number;
+  databaseSizeBytes: number;
+  totalSizeBytes: number;
+  directory: string;
+  includesKey: boolean;
+}
+
+export interface ArchiveSearchFilters {
+  userId?: string;
+  source?: string;
+  provider?: string;
+  model?: string;
+  status?: string;
+  dateFrom?: number;
+  dateTo?: number;
+}
+
+export interface ArchivedConversationSummary {
+  id: string;
+  ownerKey: string;
+  userId?: string;
+  userName?: string;
+  userEmail?: string;
+  source: string;
+  provider: string;
+  model?: string;
+  status: string;
+  title: string;
+  summary?: string;
+  createdAt: number;
+  updatedAt: number;
+  messageCount: number;
+  hasPartialResponse: boolean;
+}
+
+export interface ArchiveSearchPage {
+  items: ArchivedConversationSummary[];
+  nextCursor?: string;
+  total: number;
+}
+
+export interface ArchivedAttachment {
+  id: number;
+  referenceType: string;
+  mimeType?: string;
+  fileName?: string;
+  sizeBytes: number;
+  sha256: string;
+}
+
+export interface ArchivedMessage {
+  id: number;
+  logicalPosition: number;
+  revision: number;
+  role: string;
+  content: string;
+  contentHash: string;
+  createdAt?: number;
+  tokenCount?: number;
+  cost?: string;
+  status: string;
+  metadata: Record<string, unknown>;
+  attachments: ArchivedAttachment[];
+}
+
+export interface ArchivedExchange {
+  id: string;
+  provider: string;
+  model?: string;
+  status: string;
+  stream: boolean;
+  startedAt: number;
+  completedAt?: number;
+  httpStatus?: number;
+  errorCode?: string;
+  requestPayload: unknown;
+  responsePayload?: unknown;
+  eventCount: number;
+}
+
+export interface ArchivedConversationDetail {
+  conversation: ArchivedConversationSummary;
+  messages: ArchivedMessage[];
+  exchanges: ArchivedExchange[];
+}
+
+export interface HistoryImportPreviewItem {
+  provider: string;
+  sessionId: string;
+  title: string;
+  sourcePathHash: string;
+  messageCount: number;
+  alreadyImported: boolean;
+  error?: string;
+}
+
+export interface HistoryImportPreview {
+  scanned: number;
+  importable: number;
+  alreadyImported: number;
+  failed: number;
+  byProvider: Record<string, number>;
+  items: HistoryImportPreviewItem[];
+}
+
+export interface HistoryImportResult {
+  imported: number;
+  skipped: number;
+  failed: number;
+  errors: string[];
 }
 
 // MCP 服务器连接参数（宽松：允许扩展字段）

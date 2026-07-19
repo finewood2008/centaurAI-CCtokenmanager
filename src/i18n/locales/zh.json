@@ -49,7 +49,8 @@
     "expandSidebar": "展开侧边栏",
     "collapseSidebar": "折叠侧边栏",
     "proxyActive": "本地路由运行中",
-    "providerWorkspace": "密钥与端点管理"
+    "providerWorkspace": "密钥与端点管理",
+    "archive": "对话归档"
   },
   "firstRunNotice": {
     "title": "欢迎使用 TOKEN MANAGER",
@@ -473,6 +474,12 @@
       "deleteFailed": "删除失败",
       "deleteConfirmTitle": "确认删除备份",
       "deleteConfirmMessage": "此备份将被永久删除，此操作无法撤消。"
+    },
+    "manualArchiveTransfer": {
+      "uploadLabel": "本次手动上传包含对话归档",
+      "uploadWarning": "勾选后会将加密的对话归档发送到当前云存储。云端快照不包含解密密钥；请单独安全保管归档密钥。此选项只对本次操作生效，自动同步始终不上传归档。",
+      "restoreLabel": "同时恢复云端对话归档",
+      "restoreWarning": "勾选后会从当前云存储取回对话归档并覆盖本地归档。云端快照不包含解密密钥，只有本机归档密钥匹配时才能恢复。此选项只对本次操作生效。"
     },
     "webdavSync": {
       "title": "WebDAV 云同步",

@@ -1,5 +1,6 @@
 mod app_config;
 mod app_store;
+mod archive;
 mod auto_launch;
 mod claude_desktop_config;
 mod claude_mcp;
@@ -14,11 +15,13 @@ mod error;
 mod gemini_config;
 mod gemini_mcp;
 pub mod hermes_config;
+mod identity_manager;
 mod init_status;
 mod lightweight;
 #[cfg(target_os = "linux")]
 mod linux_fix;
 mod mcp;
+mod memory_manager;
 mod openclaw_config;
 mod opencode_config;
 mod panic_hook;
@@ -865,6 +868,9 @@ pub fn run() {
                 app_state.db.clone(),
                 app.handle().clone(),
             );
+            app_state.archive.start_local_backup_worker();
+            app_state.archive.start_local_history_worker();
+            crate::archive::local_api::start(app_state.archive.clone());
             // 将同一个实例注入到全局状态，避免重复创建导致的不一致
             app.manage(app_state);
 
@@ -1134,6 +1140,24 @@ pub fn run() {
             commands::read_live_provider_settings,
             commands::get_settings,
             commands::save_settings,
+            commands::get_archive_health,
+            commands::initialize_conversation_archive,
+            commands::initialize_local_conversation_archive,
+            commands::trigger_local_history_import,
+            commands::get_local_conversation_api_status,
+            commands::reveal_local_conversation_api_token,
+            commands::rotate_local_conversation_api_token,
+            commands::preview_local_history_import,
+            commands::import_local_history,
+            commands::search_archived_conversations,
+            commands::get_archived_conversation,
+            commands::export_archived_conversations,
+            commands::delete_archived_conversations,
+            commands::list_archive_local_snapshots,
+            commands::create_archive_local_snapshot,
+            commands::restore_archive_local_snapshot,
+            commands::delete_archive_local_snapshot,
+            commands::test_archive_redaction,
             commands::get_rectifier_config,
             commands::set_rectifier_config,
             commands::get_optimizer_config,

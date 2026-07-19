@@ -49,7 +49,8 @@
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
     "proxyActive": "Local routing active",
-    "providerWorkspace": "Key & endpoint management"
+    "providerWorkspace": "Key & endpoint management",
+    "archive": "Conversation Archive"
   },
   "firstRunNotice": {
     "title": "Welcome to TOKEN MANAGER",
@@ -473,6 +474,12 @@
       "deleteFailed": "Delete failed",
       "deleteConfirmTitle": "Confirm Delete",
       "deleteConfirmMessage": "This backup will be permanently deleted. This action cannot be undone."
+    },
+    "manualArchiveTransfer": {
+      "uploadLabel": "Include conversation archive in this manual upload",
+      "uploadWarning": "Selecting this sends the encrypted conversation archive to the configured cloud storage. The cloud snapshot does not include its decryption key; keep the archive key separately and securely. This choice applies only to this operation, and automatic sync never uploads the archive.",
+      "restoreLabel": "Also restore the cloud conversation archive",
+      "restoreWarning": "Selecting this retrieves the conversation archive from cloud storage and overwrites the local archive. The cloud snapshot does not include its decryption key, so restoration requires the matching local archive key. This choice applies only to this operation."
     },
     "webdavSync": {
       "title": "WebDAV Cloud Sync",

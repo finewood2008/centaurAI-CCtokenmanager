@@ -242,12 +242,13 @@ pub async fn send_request(
         .map(|c| !c.cases.is_empty())
         .unwrap_or(false);
 
+    let safe_uri = crate::archive::redact_log_text(&uri.to_string());
+    let safe_proxy = proxy_url.map(crate::archive::redact_log_text);
     log::debug!(
-        "[HyperClient] Sending request: uri={uri}, header_count={}, \
-         has_host={}, has_original_cases={has_cases}, proxy={:?}",
+        "[HyperClient] Sending request: uri={safe_uri}, header_count={}, \
+         has_host={}, has_original_cases={has_cases}, proxy={safe_proxy:?}",
         headers.len(),
         headers.contains_key(http::header::HOST),
-        proxy_url,
     );
 
     if let Some(original_cases) = original_cases

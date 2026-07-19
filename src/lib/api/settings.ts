@@ -119,12 +119,12 @@ export const settingsApi = {
     });
   },
 
-  async webdavSyncUpload(): Promise<WebDavSyncResult> {
-    return await invoke("webdav_sync_upload");
+  async webdavSyncUpload(includeArchive = false): Promise<WebDavSyncResult> {
+    return await invoke("webdav_sync_upload", { includeArchive });
   },
 
-  async webdavSyncDownload(): Promise<WebDavSyncResult> {
-    return await invoke("webdav_sync_download");
+  async webdavSyncDownload(restoreArchive = false): Promise<WebDavSyncResult> {
+    return await invoke("webdav_sync_download", { restoreArchive });
   },
 
   async webdavSyncSaveSettings(
@@ -155,12 +155,12 @@ export const settingsApi = {
     });
   },
 
-  async s3SyncUpload(): Promise<WebDavSyncResult> {
-    return await invoke("s3_sync_upload");
+  async s3SyncUpload(includeArchive = false): Promise<WebDavSyncResult> {
+    return await invoke("s3_sync_upload", { includeArchive });
   },
 
-  async s3SyncDownload(): Promise<WebDavSyncResult> {
-    return await invoke("s3_sync_download");
+  async s3SyncDownload(restoreArchive = false): Promise<WebDavSyncResult> {
+    return await invoke("s3_sync_download", { restoreArchive });
   },
 
   async s3SyncSaveSettings(

@@ -49,7 +49,8 @@
     "expandSidebar": "サイドバーを展開",
     "collapseSidebar": "サイドバーを折りたたむ",
     "proxyActive": "ローカルルーティング実行中",
-    "providerWorkspace": "キーとエンドポイント管理"
+    "providerWorkspace": "キーとエンドポイント管理",
+    "archive": "会話アーカイブ"
   },
   "firstRunNotice": {
     "title": "TOKEN MANAGER へようこそ",
@@ -473,6 +474,12 @@
       "deleteFailed": "削除に失敗しました",
       "deleteConfirmTitle": "バックアップの削除を確認",
       "deleteConfirmMessage": "このバックアップは完全に削除されます。この操作は取り消せません。"
+    },
+    "manualArchiveTransfer": {
+      "uploadLabel": "今回の手動アップロードに会話アーカイブを含める",
+      "uploadWarning": "選択すると、暗号化された会話アーカイブが設定済みのクラウドストレージへ送信されます。クラウドスナップショットには復号キーが含まれないため、アーカイブキーを別途安全に保管してください。この選択は今回の操作だけに適用され、自動同期がアーカイブをアップロードすることはありません。",
+      "restoreLabel": "クラウドの会話アーカイブも復元する",
+      "restoreWarning": "選択すると、クラウドストレージから会話アーカイブを取得してローカルアーカイブを上書きします。クラウドスナップショットには復号キーが含まれないため、復元には一致するローカルのアーカイブキーが必要です。この選択は今回の操作だけに適用されます。"
     },
     "webdavSync": {
       "title": "WebDAV クラウド同期",

@@ -59,20 +59,24 @@ import {
   shouldHideCodexMessageFromToc,
 } from "./utils";
 
-type ProviderFilter =
-  | "all"
-  | "codex"
-  | "claude"
-  | "opencode"
-  | "openclaw"
-  | "gemini"
-  | "hermes";
+type ProviderFilter = string;
 
 export function SessionManagerPage({ appId }: { appId: string }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data, isLoading, refetch } = useSessionsQuery();
   const sessions = data ?? [];
+  const pluginProviders = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          sessions
+            .map((session) => session.providerId)
+            .filter((providerId) => providerId.startsWith("plugin:")),
+        ),
+      ).sort(),
+    [sessions],
+  );
   const detailRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [activeMessageIndex, setActiveMessageIndex] = useState<number | null>(
@@ -630,6 +634,20 @@ export function SessionManagerPage({ appId }: { appId: string }) {
                                 </span>
                               </div>
                             </SelectItem>
+                            {pluginProviders.map((providerId) => (
+                              <SelectItem key={providerId} value={providerId}>
+                                <div className="flex items-center gap-2">
+                                  <ProviderIcon
+                                    icon="apps"
+                                    name={providerId}
+                                    size={14}
+                                  />
+                                  <span>
+                                    {providerId.replace(/^plugin:/, "")}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
                             <SelectItem value="codex">
                               <div className="flex items-center gap-2">
                                 <ProviderIcon

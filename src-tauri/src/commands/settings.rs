@@ -35,6 +35,9 @@ fn merge_settings_for_save(
         }
         _ => {}
     }
+    if incoming.archive.is_none() {
+        incoming.archive = existing.archive.clone();
+    }
     if incoming.local_migrations.is_none() {
         incoming.local_migrations = existing.local_migrations.clone();
     } else if let (Some(incoming_migrations), Some(existing_migrations)) =
@@ -64,10 +67,28 @@ pub async fn get_settings() -> Result<crate::settings::AppSettings, String> {
 
 /// 保存设置
 #[tauri::command]
-pub async fn save_settings(settings: crate::settings::AppSettings) -> Result<bool, String> {
+pub async fn save_settings(
+    settings: crate::settings::AppSettings,
+    state: tauri::State<'_, crate::store::AppState>,
+) -> Result<bool, String> {
     let existing = crate::settings::get_settings();
-    let merged = merge_settings_for_save(settings, &existing);
+    let mut merged = merge_settings_for_save(settings, &existing);
+    if let Some(archive) = &mut merged.archive {
+        archive.normalize();
+    }
+    let archive_changed = merged.archive != existing.archive;
+    if archive_changed
+        && merged
+            .archive
+            .as_ref()
+            .is_some_and(|archive| archive.enabled)
+    {
+        state.archive.validate_enablement(&merged).await?;
+    }
     crate::settings::update_settings(merged).map_err(|e| e.to_string())?;
+    if archive_changed {
+        state.archive.notify_local_backup_changed();
+    }
     Ok(true)
 }
 
@@ -122,8 +143,9 @@ pub async fn set_auto_launch(enabled: bool) -> Result<bool, String> {
 mod tests {
     use super::merge_settings_for_save;
     use crate::settings::{
-        AppSettings, CodexProviderTemplateMigration, CodexThirdPartyHistoryProviderBucketMigration,
-        LocalMigrations, S3SyncSettings, WebDavSyncSettings,
+        AppSettings, ArchiveSettings, CodexProviderTemplateMigration,
+        CodexThirdPartyHistoryProviderBucketMigration, LocalMigrations, S3SyncSettings,
+        WebDavSyncSettings,
     };
 
     #[test]
@@ -351,6 +373,19 @@ mod tests {
             template_migration.migrated_provider_ids,
             vec!["legacy".to_string()]
         );
+    }
+
+    #[test]
+    fn save_settings_should_preserve_archive_when_payload_omits_it() {
+        let existing = AppSettings {
+            archive: Some(ArchiveSettings {
+                enabled: true,
+                ..ArchiveSettings::default()
+            }),
+            ..AppSettings::default()
+        };
+        let merged = merge_settings_for_save(AppSettings::default(), &existing);
+        assert!(merged.archive.is_some_and(|archive| archive.enabled));
     }
 }
 

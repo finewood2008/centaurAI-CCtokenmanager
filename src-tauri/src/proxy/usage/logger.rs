@@ -70,6 +70,10 @@ impl<'a> UsageLogger<'a> {
             };
 
         let created_at = chrono::Utc::now().timestamp();
+        let error_message = log
+            .error_message
+            .as_deref()
+            .map(crate::archive::redact_log_text);
 
         conn.execute(
             "INSERT OR REPLACE INTO proxy_request_logs (
@@ -98,7 +102,7 @@ impl<'a> UsageLogger<'a> {
                 log.latency_ms as i64,
                 log.first_token_ms.map(|v| v as i64),
                 log.status_code as i64,
-                log.error_message,
+                error_message,
                 log.session_id,
                 log.provider_type,
                 log.is_streaming as i64,

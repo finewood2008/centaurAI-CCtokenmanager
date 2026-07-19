@@ -447,16 +447,18 @@ async fn handle_claude_transform(
                 } else {
                     chat_sse_to_response_value(&body_str)
                 };
-                // 聚合也失败时：保留全量 body 服务端日志，并给客户端错误附带同款
+                // 聚合也失败时：保留脱敏 body 服务端日志，并给客户端错误附带同款
                 // 现场诊断（content-type/body 摘要），否则命中嗅探臂的用户只拿到
                 // 裸聚合错误、丢失非嗅探臂已有的诊断增强（C7）
                 aggregated.map_err(|e| {
-                    log::error!("[Claude] SSE 聚合兜底失败: {e}, body: {body_str}");
+                    let safe_body = crate::archive::redact_log_text(&body_str);
+                    log::error!("[Claude] SSE 聚合兜底失败: {e}, body: {safe_body}");
                     aggregate_fallback_error(e, &response_headers, &body_str)
                 })?
             }
             Err(e) => {
-                log::error!("[Claude] 解析上游响应失败: {e}, body: {body_str}");
+                let safe_body = crate::archive::redact_log_text(&body_str);
+                log::error!("[Claude] 解析上游响应失败: {e}, body: {safe_body}");
                 return Err(upstream_body_parse_error(
                     "Failed to parse upstream response",
                     &e,
@@ -481,9 +483,9 @@ async fn handle_claude_transform(
     } else {
         transform::openai_to_anthropic(upstream_response)
     }
-    .map_err(|e| {
-        log::error!("[Claude] 转换响应失败: {e}");
-        e
+    .inspect_err(|e| {
+        let safe_error = crate::archive::redact_log_text(&e.to_string());
+        log::error!("[Claude] 转换响应失败: {safe_error}");
     })?;
 
     // 记录使用量
@@ -917,14 +919,16 @@ async fn handle_codex_chat_to_responses_transform(
         // 上游对 stream:false 返回未标记 Content-Type 的 SSE 体时按 SSE 聚合。
         Err(_) if body_looks_like_sse(&body_str) => {
             log::warn!("[Codex] 上游对非流请求返回未标记的 SSE 体，按 Chat SSE 聚合兜底");
-            // 聚合也失败时：保留全量 body 服务端日志，并给客户端错误附带现场诊断（C7）
+            // 聚合也失败时：保留脱敏 body 服务端日志，并给客户端错误附带现场诊断（C7）
             chat_sse_to_response_value(&body_str).map_err(|e| {
-                log::error!("[Codex] SSE 聚合兜底失败: {e}, body: {body_str}");
+                let safe_body = crate::archive::redact_log_text(&body_str);
+                log::error!("[Codex] SSE 聚合兜底失败: {e}, body: {safe_body}");
                 aggregate_fallback_error(e, &response_headers, &body_str)
             })?
         }
         Err(e) => {
-            log::error!("[Codex] 解析 Chat 上游响应失败: {e}, body: {body_str}");
+            let safe_body = crate::archive::redact_log_text(&body_str);
+            log::error!("[Codex] 解析 Chat 上游响应失败: {e}, body: {safe_body}");
             return Err(upstream_body_parse_error(
                 "Failed to parse upstream chat response",
                 &e,
@@ -937,9 +941,9 @@ async fn handle_codex_chat_to_responses_transform(
         chat_response,
         &tool_context,
     )
-    .map_err(|e| {
-        log::error!("[Codex] Chat → Responses 响应转换失败: {e}");
-        e
+    .inspect_err(|e| {
+        let safe_error = crate::archive::redact_log_text(&e.to_string());
+        log::error!("[Codex] Chat → Responses 响应转换失败: {safe_error}");
     })?;
     state
         .codex_chat_history
@@ -1054,7 +1058,8 @@ async fn handle_codex_chat_error_response(
             } else {
                 lossy.into_owned()
             };
-            log::warn!("[Codex] Chat 错误响应不是合法 JSON，按文本透传: {truncated}");
+            let safe_body = crate::archive::redact_log_text(&truncated);
+            log::warn!("[Codex] Chat 错误响应不是合法 JSON，按文本透传: {safe_body}");
             Value::String(truncated)
         }
     };

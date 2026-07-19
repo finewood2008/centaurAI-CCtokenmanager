@@ -289,10 +289,10 @@ impl RequestForwarder {
                 .await;
             {
                 let mut status = self.status.write().await;
-                status.last_error = Some(format!(
+                status.last_error = Some(crate::archive::redact_log_text(&format!(
                     "Provider {} {rectifier_label}重试失败: {}",
                     provider.name, retry_err
-                ));
+                )));
             }
             *last_error = Some(retry_err);
             *last_provider = Some(provider.clone());
@@ -304,7 +304,7 @@ impl RequestForwarder {
             .await;
         let mut status = self.status.write().await;
         status.failed_requests += 1;
-        status.last_error = Some(retry_err.to_string());
+        status.last_error = Some(crate::archive::redact_log_text(&retry_err.to_string()));
         if status.total_requests > 0 {
             status.success_rate =
                 (status.success_requests as f32 / status.total_requests as f32) * 100.0;
@@ -666,7 +666,8 @@ impl RequestForwarder {
                                     .await;
                                 let mut status = self.status.write().await;
                                 status.failed_requests += 1;
-                                status.last_error = Some(e.to_string());
+                                status.last_error =
+                                    Some(crate::archive::redact_log_text(&e.to_string()));
                                 if status.total_requests > 0 {
                                     status.success_rate = (status.success_requests as f32
                                         / status.total_requests as f32)
@@ -818,7 +819,8 @@ impl RequestForwarder {
                                     .await;
                                 let mut status = self.status.write().await;
                                 status.failed_requests += 1;
-                                status.last_error = Some(e.to_string());
+                                status.last_error =
+                                    Some(crate::archive::redact_log_text(&e.to_string()));
                                 if status.total_requests > 0 {
                                     status.success_rate = (status.success_requests as f32
                                         / status.total_requests as f32)
@@ -844,7 +846,8 @@ impl RequestForwarder {
                                     .await;
                                 let mut status = self.status.write().await;
                                 status.failed_requests += 1;
-                                status.last_error = Some(e.to_string());
+                                status.last_error =
+                                    Some(crate::archive::redact_log_text(&e.to_string()));
                                 if status.total_requests > 0 {
                                     status.success_rate = (status.success_requests as f32
                                         / status.total_requests as f32)
@@ -966,7 +969,7 @@ impl RequestForwarder {
                             .await;
                         let mut status = self.status.write().await;
                         status.failed_requests += 1;
-                        status.last_error = Some(e.to_string());
+                        status.last_error = Some(crate::archive::redact_log_text(&e.to_string()));
                         if status.total_requests > 0 {
                             status.success_rate = (status.success_requests as f32
                                 / status.total_requests as f32)
@@ -999,8 +1002,9 @@ impl RequestForwarder {
 
                             {
                                 let mut status = self.status.write().await;
-                                status.last_error =
-                                    Some(format!("Provider {} 失败: {}", provider.name, e));
+                                status.last_error = Some(crate::archive::redact_log_text(
+                                    &format!("Provider {} 失败: {}", provider.name, e),
+                                ));
                             }
 
                             let (log_code, log_message) = build_retryable_failure_log(
@@ -1009,6 +1013,7 @@ impl RequestForwarder {
                                 providers.len(),
                                 &e,
                             );
+                            let log_message = crate::archive::redact_log_text(&log_message);
                             log::warn!("[{app_type_str}] [{log_code}] {log_message}");
 
                             last_error = Some(e);
@@ -1028,7 +1033,8 @@ impl RequestForwarder {
                             {
                                 let mut status = self.status.write().await;
                                 status.failed_requests += 1;
-                                status.last_error = Some(e.to_string());
+                                status.last_error =
+                                    Some(crate::archive::redact_log_text(&e.to_string()));
                                 if status.total_requests > 0 {
                                     status.success_rate = (status.success_requests as f32
                                         / status.total_requests as f32)
@@ -1076,6 +1082,7 @@ impl RequestForwarder {
         if let Some((log_code, log_message)) =
             build_terminal_failure_log(attempted_providers, providers.len(), last_error.as_ref())
         {
+            let log_message = crate::archive::redact_log_text(&log_message);
             log::warn!("[{app_type_str}] [{log_code}] {log_message}");
         }
 
@@ -1448,8 +1455,9 @@ impl RequestForwarder {
                             );
                         }
                         Err(e) => {
+                            let safe_error = crate::archive::redact_log_text(&e.to_string());
                             log::error!(
-                                "[Copilot] 获取 Copilot token 失败 (account={}): {e}",
+                                "[Copilot] 获取 Copilot token 失败 (account={}): {safe_error}",
                                 account_id.as_deref().unwrap_or("default")
                             );
                             return Err(ProxyError::AuthError(format!(
@@ -1504,7 +1512,8 @@ impl RequestForwarder {
                             );
                         }
                         Err(e) => {
-                            log::error!("[CodexOAuth] 获取 access_token 失败: {e}");
+                            let safe_error = crate::archive::redact_log_text(&e.to_string());
+                            log::error!("[CodexOAuth] 获取 access_token 失败: {safe_error}");
                             return Err(ProxyError::AuthError(format!(
                                 "Codex OAuth 认证失败: {e}"
                             )));
@@ -1841,15 +1850,15 @@ impl RequestForwarder {
             .get("model")
             .and_then(|v| v.as_str())
             .unwrap_or("<none>");
-        log::info!("[{tag}] >>> 请求 URL: {url} (model={request_model})");
+        let safe_url = crate::archive::redact_log_text(&url);
+        log::info!("[{tag}] >>> 请求 URL: {safe_url} (model={request_model})");
         if log::log_enabled!(log::Level::Debug) {
-            if let Ok(body_str) = serde_json::to_string(&filtered_body) {
-                log::debug!(
-                    "[{tag}] >>> 请求体内容 ({}字节): {}",
-                    body_str.len(),
-                    body_str
-                );
-            }
+            let body_str = crate::archive::redact_log_json(&filtered_body);
+            log::debug!(
+                "[{tag}] >>> 脱敏请求体 ({}字节): {}",
+                body_str.len(),
+                body_str
+            );
         }
 
         // 确定超时

@@ -3,6 +3,7 @@
 //! 提供代理服务器的启动、停止和配置管理
 
 use crate::app_config::AppType;
+use crate::archive::ArchiveService;
 use crate::config::{get_claude_settings_path, read_json_file, write_json_file};
 use crate::database::Database;
 use crate::provider::Provider;
@@ -54,6 +55,7 @@ enum ClaudeTakeoverAuthPolicy {
 #[derive(Clone)]
 pub struct ProxyService {
     db: Arc<Database>,
+    archive: Arc<ArchiveService>,
     server: Arc<RwLock<Option<ProxyServer>>>,
     /// AppHandle，用于传递给 ProxyServer 以支持故障转移时的 UI 更新
     app_handle: Arc<RwLock<Option<tauri::AppHandle>>>,
@@ -69,10 +71,15 @@ impl ProxyService {
     pub fn new(db: Arc<Database>) -> Self {
         Self {
             db,
+            archive: Arc::new(ArchiveService::new()),
             server: Arc::new(RwLock::new(None)),
             app_handle: Arc::new(RwLock::new(None)),
             switch_locks: SwitchLockManager::new(),
         }
+    }
+
+    pub fn archive_service(&self) -> Arc<ArchiveService> {
+        self.archive.clone()
     }
 
     #[cfg(test)]
@@ -446,7 +453,12 @@ impl ProxyService {
 
         // 4. 创建并启动服务器
         let app_handle = self.app_handle.read().await.clone();
-        let server = ProxyServer::new(config.clone(), self.db.clone(), app_handle);
+        let server = ProxyServer::new(
+            config.clone(),
+            self.db.clone(),
+            self.archive.clone(),
+            app_handle,
+        );
         let info = server
             .start()
             .await
@@ -2581,7 +2593,12 @@ impl ProxyService {
             }
 
             let app_handle = self.app_handle.read().await.clone();
-            let new_server = ProxyServer::new(new_config.clone(), self.db.clone(), app_handle);
+            let new_server = ProxyServer::new(
+                new_config.clone(),
+                self.db.clone(),
+                self.archive.clone(),
+                app_handle,
+            );
             let info = new_server
                 .start()
                 .await

@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -229,6 +230,35 @@ function ActionButton({
   );
 }
 
+function ArchiveCloudOptIn({
+  mode,
+  checked,
+  onCheckedChange,
+}: {
+  mode: "upload" | "restore";
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  const { t } = useTranslation();
+  const labelKey = `settings.manualArchiveTransfer.${mode}Label`;
+  const warningKey = `settings.manualArchiveTransfer.${mode}Warning`;
+
+  return (
+    <div className="rounded-lg border border-amber-400/70 bg-amber-50/80 p-3 text-amber-950 dark:border-amber-500/60 dark:bg-amber-950/30 dark:text-amber-100">
+      <label className="flex cursor-pointer items-start gap-2.5 font-medium">
+        <Checkbox
+          checked={checked}
+          onCheckedChange={(value) => onCheckedChange(value === true)}
+          aria-label={t(labelKey)}
+          className="mt-0.5"
+        />
+        <span>{t(labelKey)}</span>
+      </label>
+      <p className="mt-2 text-xs leading-relaxed">{t(warningKey)}</p>
+    </div>
+  );
+}
+
 // ─── Main component ─────────────────────────────────────────
 
 export function WebdavSyncSection({
@@ -313,16 +343,27 @@ export function WebdavSyncSection({
   // Confirmation dialog state
   const [dialogType, setDialogType] = useState<DialogType>(null);
   const [remoteInfo, setRemoteInfo] = useState<RemoteSnapshotInfo | null>(null);
+  const [includeArchiveInUpload, setIncludeArchiveInUpload] = useState(false);
+  const [restoreArchiveFromDownload, setRestoreArchiveFromDownload] =
+    useState(false);
+  const [includeArchiveInS3Upload, setIncludeArchiveInS3Upload] =
+    useState(false);
+  const [restoreArchiveFromS3Download, setRestoreArchiveFromS3Download] =
+    useState(false);
   const [showAutoSyncConfirm, setShowAutoSyncConfirm] = useState(false);
 
   const closeDialog = useCallback(() => {
     setDialogType(null);
     setRemoteInfo(null);
+    setIncludeArchiveInUpload(false);
+    setRestoreArchiveFromDownload(false);
   }, []);
 
   const closeS3Dialog = useCallback(() => {
     setS3DialogType(null);
     setS3RemoteInfo(null);
+    setIncludeArchiveInS3Upload(false);
+    setRestoreArchiveFromS3Download(false);
   }, []);
 
   // Cleanup justSaved timer on unmount
@@ -556,6 +597,7 @@ export function WebdavSyncSection({
       } else {
         setRemoteInfo(info);
       }
+      setIncludeArchiveInUpload(false);
       setDialogType("upload");
     } catch {
       setRemoteInfo(null);
@@ -572,10 +614,11 @@ export function WebdavSyncSection({
       toast.error(t("settings.webdavSync.unsavedChanges"));
       return;
     }
+    const includeArchive = includeArchiveInUpload;
     closeDialog();
     setActionState("uploading");
     try {
-      await settingsApi.webdavSyncUpload();
+      await settingsApi.webdavSyncUpload(includeArchive);
       toast.success(t("settings.webdavSync.uploadSuccess"));
       await queryClient.invalidateQueries();
     } catch (error) {
@@ -587,7 +630,7 @@ export function WebdavSyncSection({
     } finally {
       setActionState("idle");
     }
-  }, [closeDialog, dirty, queryClient, t]);
+  }, [closeDialog, dirty, includeArchiveInUpload, queryClient, t]);
 
   /** Fetch remote info, then open download confirmation dialog. */
   const handleDownloadClick = useCallback(async () => {
@@ -614,6 +657,7 @@ export function WebdavSyncSection({
         return;
       }
       setRemoteInfo(info);
+      setRestoreArchiveFromDownload(false);
       setDialogType("download");
     } catch (error) {
       toast.error(
@@ -632,10 +676,11 @@ export function WebdavSyncSection({
       toast.error(t("settings.webdavSync.unsavedChanges"));
       return;
     }
+    const restoreArchive = restoreArchiveFromDownload;
     closeDialog();
     setActionState("downloading");
     try {
-      await settingsApi.webdavSyncDownload();
+      await settingsApi.webdavSyncDownload(restoreArchive);
       toast.success(t("settings.webdavSync.downloadSuccess"));
       await queryClient.invalidateQueries();
     } catch (error) {
@@ -647,7 +692,7 @@ export function WebdavSyncSection({
     } finally {
       setActionState("idle");
     }
-  }, [closeDialog, dirty, queryClient, t]);
+  }, [closeDialog, dirty, queryClient, restoreArchiveFromDownload, t]);
 
   // ─── S3 helpers ────────────────────────────────────────────
 
@@ -773,6 +818,7 @@ export function WebdavSyncSection({
       } else {
         setS3RemoteInfo(info);
       }
+      setIncludeArchiveInS3Upload(false);
       setS3DialogType("upload");
     } catch {
       setS3RemoteInfo(null);
@@ -788,10 +834,11 @@ export function WebdavSyncSection({
       toast.error(t("settings.s3Sync.unsavedChanges"));
       return;
     }
+    const includeArchive = includeArchiveInS3Upload;
     closeS3Dialog();
     setS3ActionState("uploading");
     try {
-      await settingsApi.s3SyncUpload();
+      await settingsApi.s3SyncUpload(includeArchive);
       toast.success(t("settings.s3Sync.uploadSuccess"));
       await queryClient.invalidateQueries();
     } catch (error) {
@@ -803,7 +850,7 @@ export function WebdavSyncSection({
     } finally {
       setS3ActionState("idle");
     }
-  }, [closeS3Dialog, s3Dirty, queryClient, t]);
+  }, [closeS3Dialog, includeArchiveInS3Upload, s3Dirty, queryClient, t]);
 
   const handleS3DownloadClick = useCallback(async () => {
     if (s3Dirty) {
@@ -826,6 +873,7 @@ export function WebdavSyncSection({
         return;
       }
       setS3RemoteInfo(info);
+      setRestoreArchiveFromS3Download(false);
       setS3DialogType("download");
     } catch (error) {
       toast.error(
@@ -843,10 +891,11 @@ export function WebdavSyncSection({
       toast.error(t("settings.s3Sync.unsavedChanges"));
       return;
     }
+    const restoreArchive = restoreArchiveFromS3Download;
     closeS3Dialog();
     setS3ActionState("downloading");
     try {
-      await settingsApi.s3SyncDownload();
+      await settingsApi.s3SyncDownload(restoreArchive);
       toast.success(t("settings.s3Sync.downloadSuccess"));
       await queryClient.invalidateQueries();
     } catch (error) {
@@ -858,7 +907,7 @@ export function WebdavSyncSection({
     } finally {
       setS3ActionState("idle");
     }
-  }, [closeS3Dialog, s3Dirty, queryClient, t]);
+  }, [closeS3Dialog, queryClient, restoreArchiveFromS3Download, s3Dirty, t]);
 
   // ─── Sync type switching with mutual exclusion ─────────────
 
@@ -947,6 +996,8 @@ export function WebdavSyncSection({
     remoteInfo?.dbCompatVersion,
   );
   const remoteIsLegacy = remoteInfo?.layout === "legacy";
+  const remoteHasArchive =
+    remoteInfo?.artifacts.includes("conversation-archive.db") ?? false;
 
   const s3LastSyncAt = s3Config?.status?.lastSyncAt;
   const s3LastSyncDisplay = s3LastSyncAt
@@ -955,6 +1006,8 @@ export function WebdavSyncSection({
   const s3LastError = s3Config?.status?.lastError?.trim();
   const s3ShowAutoSyncError =
     !!s3LastError && s3Config?.status?.lastErrorSource === "auto";
+  const s3RemoteHasArchive =
+    s3RemoteInfo?.artifacts.includes("conversation-archive.db") ?? false;
 
   // ─── Render ─────────────────────────────────────────────
 
@@ -1613,6 +1666,11 @@ export function WebdavSyncSection({
                     {t("settings.webdavSync.confirmUpload.legacyNotice")}
                   </p>
                 )}
+                <ArchiveCloudOptIn
+                  mode="upload"
+                  checked={includeArchiveInUpload}
+                  onCheckedChange={setIncludeArchiveInUpload}
+                />
               </div>
             </DialogDescription>
           </DialogHeader>
@@ -1686,6 +1744,13 @@ export function WebdavSyncSection({
                 <p className="text-destructive font-medium">
                   {t("settings.webdavSync.confirmDownload.warning")}
                 </p>
+                {remoteHasArchive && (
+                  <ArchiveCloudOptIn
+                    mode="restore"
+                    checked={restoreArchiveFromDownload}
+                    onCheckedChange={setRestoreArchiveFromDownload}
+                  />
+                )}
               </div>
             </DialogDescription>
           </DialogHeader>
@@ -1753,6 +1818,11 @@ export function WebdavSyncSection({
                     {t("settings.s3Sync.confirmUpload.warning")}
                   </p>
                 )}
+                <ArchiveCloudOptIn
+                  mode="upload"
+                  checked={includeArchiveInS3Upload}
+                  onCheckedChange={setIncludeArchiveInS3Upload}
+                />
               </div>
             </DialogDescription>
           </DialogHeader>
@@ -1805,6 +1875,13 @@ export function WebdavSyncSection({
                 <p className="text-destructive font-medium">
                   {t("settings.s3Sync.confirmDownload.warning")}
                 </p>
+                {s3RemoteHasArchive && (
+                  <ArchiveCloudOptIn
+                    mode="restore"
+                    checked={restoreArchiveFromS3Download}
+                    onCheckedChange={setRestoreArchiveFromS3Download}
+                  />
+                )}
               </div>
             </DialogDescription>
           </DialogHeader>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   Loader2,
@@ -48,11 +49,13 @@ import { UsageDashboard } from "@/components/usage/UsageDashboard";
 import { LogConfigPanel } from "@/components/settings/LogConfigPanel";
 import { AuthCenterPanel } from "@/components/settings/AuthCenterPanel";
 import { CodexAuthSettings } from "@/components/settings/CodexAuthSettings";
+import { ArchiveSettingsPanel } from "@/components/settings/ArchiveSettingsPanel";
 import { useInstalledSkills } from "@/hooks/useSkills";
 import { useSettings } from "@/hooks/useSettings";
 import { useImportExport } from "@/hooks/useImportExport";
 import { useTranslation } from "react-i18next";
 import type { SettingsFormState } from "@/hooks/useSettings";
+import type { ArchiveSettings, Settings } from "@/types";
 import type { SettingsTab } from "@/components/layout/AppSidebar";
 
 interface SettingsDialogProps {
@@ -75,6 +78,7 @@ export function SettingsPage({
   showNavigation = true,
 }: SettingsDialogProps) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const {
     settings,
     isLoading,
@@ -205,6 +209,27 @@ export function SettingsPage({
     [autoSaveSettings, settings, t, updateSettings],
   );
 
+  const handleArchiveSettingsApplied = useCallback(
+    (archive: ArchiveSettings) => {
+      updateSettings({ archive });
+      queryClient.setQueryData<Settings>(["settings"], (current) =>
+        current ? { ...current, archive } : current,
+      );
+    },
+    [queryClient, updateSettings],
+  );
+
+  const handleArchiveAutoSave = useCallback(
+    async (updates: { archive: ArchiveSettings }) => {
+      if (!settings) throw new Error("设置尚未加载完成");
+      const result = await autoSaveSettings(updates);
+      if (!result) throw new Error("归档配置未保存");
+      updateSettings(updates);
+      return result;
+    },
+    [autoSaveSettings, settings, updateSettings],
+  );
+
   const isBusy = useMemo(() => isLoading && !settings, [isLoading, settings]);
 
   return (
@@ -220,7 +245,7 @@ export function SettingsPage({
           className="flex flex-col h-full"
         >
           {showNavigation && (
-            <TabsList className="grid w-full grid-cols-7 mb-6 glass rounded-lg">
+            <TabsList className="grid w-full grid-cols-8 mb-6 glass rounded-lg">
               <TabsTrigger value="general">
                 {t("settings.tabGeneral")}
               </TabsTrigger>
@@ -232,6 +257,9 @@ export function SettingsPage({
                 {t("settings.tabAdvanced")}
               </TabsTrigger>
               <TabsTrigger value="usage">{t("usage.title")}</TabsTrigger>
+              <TabsTrigger value="archive">
+                {t("navigation.archive", { defaultValue: "对话归档" })}
+              </TabsTrigger>
               <TabsTrigger value="environment">
                 {t("settings.tabEnvironment")}
               </TabsTrigger>
@@ -513,6 +541,15 @@ export function SettingsPage({
                 <UsageDashboard />
               </TabsContent>
 
+              <TabsContent value="archive" className="mt-0">
+                {settings ? (
+                  <ArchiveSettingsPanel
+                    settings={settings}
+                    onAutoSave={handleArchiveAutoSave}
+                    onSettingsApplied={handleArchiveSettingsApplied}
+                  />
+                ) : null}
+              </TabsContent>
             </div>
 
             {selectedTab === "advanced" && settings && (
