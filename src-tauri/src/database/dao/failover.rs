@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 pub struct FailoverQueueItem {
     pub provider_id: String,
     pub provider_name: String,
-    pub sort_index: Option<usize>,
+    pub sort_index: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub provider_notes: Option<String>,
 }
