@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import {
+  Archive,
   Book,
   Brain,
   ChevronDown,
@@ -27,6 +28,7 @@ export type ProviderToolView =
   | "skills"
   | "mcp"
   | "sessions"
+  | "archive"
   | "workspace"
   | "openclawEnv"
   | "openclawTools"
@@ -135,6 +137,12 @@ export function ProviderToolsMenu({
               )}
             {item("mcp", <McpIcon size={16} />, t("mcp.title"))}
           </>
+        )}
+        <DropdownMenuSeparator />
+        {item(
+          "archive",
+          <Archive className="h-4 w-4" />,
+          t("archive.title", { defaultValue: "对话归档" }),
         )}
       </DropdownMenuContent>
     </DropdownMenu>

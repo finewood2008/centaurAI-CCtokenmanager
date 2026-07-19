@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Archive,
   ArrowLeft,
   BarChart2,
   Book,
@@ -41,6 +42,7 @@ export type AppView =
   | "skillsDiscovery"
   | "mcp"
   | "sessions"
+  | "archive"
   | "workspace"
   | "openclawEnv"
   | "openclawTools"
@@ -53,6 +55,7 @@ export type SettingsTab =
   | "auth"
   | "advanced"
   | "usage"
+  | "archive"
   | "environment"
   | "about";
 
@@ -243,6 +246,12 @@ export function AppSidebar({
     addTool("mcp", <McpIcon size={16} />, t("mcp.title"));
   }
 
+  addTool(
+    "archive",
+    <Archive className="h-4 w-4" />,
+    t("navigation.archive", { defaultValue: "对话归档" }),
+  );
+
   const settingsItems: NavItem[] = [
     {
       id: "general",
@@ -273,6 +282,12 @@ export function AppSidebar({
       icon: <BarChart2 className="h-4 w-4" />,
       label: t("usage.title"),
       onClick: () => onSettingsTabChange("usage"),
+    },
+    {
+      id: "archive",
+      icon: <Archive className="h-4 w-4" />,
+      label: t("navigation.archive", { defaultValue: "对话归档" }),
+      onClick: () => onSettingsTabChange("archive"),
     },
     {
       id: "environment",

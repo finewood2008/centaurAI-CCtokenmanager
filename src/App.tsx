@@ -100,6 +100,11 @@ const SessionManagerPage = lazy(() =>
     default: module.SessionManagerPage,
   })),
 );
+const ConversationArchivePage = lazy(() =>
+  import("@/components/archive/ConversationArchivePage").then((module) => ({
+    default: module.ConversationArchivePage,
+  })),
+);
 const WorkspaceFilesPanel = lazy(
   () => import("@/components/workspace/WorkspaceFilesPanel"),
 );
@@ -150,6 +155,7 @@ const VALID_VIEWS: AppView[] = [
   "skillsDiscovery",
   "mcp",
   "sessions",
+  "archive",
   "workspace",
   "openclawEnv",
   "openclawTools",
@@ -882,6 +888,8 @@ function App() {
         return t("settings.tabAdvanced");
       case "usage":
         return t("usage.title");
+      case "archive":
+        return t("navigation.archive", { defaultValue: "对话归档" });
       case "environment":
         return t("settings.tabEnvironment");
       case "about":
@@ -905,6 +913,8 @@ function App() {
         return t("mcp.unifiedPanel.title");
       case "sessions":
         return t("sessionManager.title");
+      case "archive":
+        return t("navigation.archive", { defaultValue: "对话归档" });
       case "workspace":
         return t("workspace.title");
       case "openclawEnv":
@@ -1110,6 +1120,8 @@ function App() {
               appId={sharedFeatureApp}
             />
           );
+        case "archive":
+          return <ConversationArchivePage />;
         case "workspace":
           return <WorkspaceFilesPanel />;
         case "openclawEnv":

@@ -49,7 +49,8 @@
     "expandSidebar": "展開側邊欄",
     "collapseSidebar": "摺疊側邊欄",
     "proxyActive": "本機路由執行中",
-    "providerWorkspace": "金鑰與端點管理"
+    "providerWorkspace": "金鑰與端點管理",
+    "archive": "對話封存"
   },
   "firstRunNotice": {
     "title": "歡迎使用 TOKEN MANAGER",
@@ -473,6 +474,12 @@
       "deleteFailed": "刪除失敗",
       "deleteConfirmTitle": "確認刪除備份",
       "deleteConfirmMessage": "此備份將被永久刪除，此操作無法復原。"
+    },
+    "manualArchiveTransfer": {
+      "uploadLabel": "本次手動上傳包含對話封存",
+      "uploadWarning": "勾選後會將加密的對話封存傳送到目前的雲端儲存。雲端快照不包含解密金鑰；請另行安全保管封存金鑰。此選項只對本次操作生效，自動同步一律不上傳封存。",
+      "restoreLabel": "同時還原雲端對話封存",
+      "restoreWarning": "勾選後會從目前的雲端儲存取回對話封存並覆寫本機封存。雲端快照不包含解密金鑰，只有本機封存金鑰相符時才能還原。此選項只對本次操作生效。"
     },
     "webdavSync": {
       "title": "WebDAV 雲端同步",

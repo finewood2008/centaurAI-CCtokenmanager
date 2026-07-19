@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
+use rusqlite::types::Value as SqliteValue;
 use rusqlite::Connection;
 use serde_json::Value;
 
@@ -195,19 +196,39 @@ pub fn load_messages_sqlite(source: &str) -> Result<Vec<SessionMessage>, String>
     )
     .map_err(|e| format!("Failed to open Hermes database: {e}"))?;
 
-    // Try querying with common column names
-    let query =
-        "SELECT role, content, created_at FROM messages WHERE session_id = ?1 ORDER BY created_at ASC";
+    let columns = get_table_columns(&conn, "messages");
+    for required in ["session_id", "role", "content"] {
+        if !columns.iter().any(|column| column == required) {
+            return Err(format!(
+                "Hermes messages table is missing required column: {required}"
+            ));
+        }
+    }
+
+    // Hermes currently stores message time in `timestamp`, while older
+    // databases may use `created_at` or `ts`. Keep all known schemas readable.
+    let timestamp_column = ["timestamp", "created_at", "ts"]
+        .into_iter()
+        .find(|candidate| columns.iter().any(|column| column == candidate));
+    let timestamp_select = timestamp_column
+        .map(|column| format!("\"{column}\""))
+        .unwrap_or_else(|| "NULL".to_string());
+    let order_by = timestamp_column
+        .map(|column| format!("\"{column}\" ASC, rowid ASC"))
+        .unwrap_or_else(|| "rowid ASC".to_string());
+    let query = format!(
+        "SELECT role, content, {timestamp_select} FROM messages WHERE session_id = ?1 ORDER BY {order_by}"
+    );
 
     let mut stmt = conn
-        .prepare(query)
+        .prepare(&query)
         .map_err(|e| format!("Failed to prepare messages query: {e}"))?;
 
     let rows = stmt
         .query_map([session_id.as_str()], |row| {
             let role: String = row.get(0)?;
-            let content: String = row.get(1)?;
-            let ts: Option<i64> = row.get(2).ok();
+            let content: Option<String> = row.get(1)?;
+            let ts: SqliteValue = row.get(2)?;
             Ok((role, content, ts))
         })
         .map_err(|e| format!("Failed to query messages: {e}"))?;
@@ -215,10 +236,11 @@ pub fn load_messages_sqlite(source: &str) -> Result<Vec<SessionMessage>, String>
     let mut messages = Vec::new();
     for row in rows.flatten() {
         let (role, content, ts) = row;
+        let content = content.unwrap_or_default();
         if content.trim().is_empty() {
             continue;
         }
-        let ts_ms = ts.and_then(|v| parse_timestamp_to_ms(&Value::Number(v.into())));
+        let ts_ms = sqlite_timestamp_to_ms(ts);
         messages.push(SessionMessage {
             role,
             content,
@@ -227,6 +249,19 @@ pub fn load_messages_sqlite(source: &str) -> Result<Vec<SessionMessage>, String>
     }
 
     Ok(messages)
+}
+
+fn sqlite_timestamp_to_ms(value: SqliteValue) -> Option<i64> {
+    match value {
+        SqliteValue::Integer(value) => parse_timestamp_to_ms(&Value::Number(value.into())),
+        SqliteValue::Real(value) if value.is_finite() => Some(if value > 1_000_000_000_000.0 {
+            value as i64
+        } else {
+            (value * 1000.0) as i64
+        }),
+        SqliteValue::Text(value) => parse_timestamp_to_ms(&Value::String(value)),
+        SqliteValue::Null | SqliteValue::Blob(_) | SqliteValue::Real(_) => None,
+    }
 }
 
 /// Delete a session from the Hermes SQLite database.
@@ -514,6 +549,73 @@ mod tests {
         assert!(parse_sqlite_source("not-sqlite").is_none());
         assert!(parse_sqlite_source("sqlite:").is_none());
         assert!(parse_sqlite_source("sqlite:/path#").is_none());
+    }
+
+    #[test]
+    fn load_messages_sqlite_supports_timestamp_column() {
+        let dir = tempdir().expect("tempdir");
+        let db_path = dir.path().join("state.db");
+        let conn = Connection::open(&db_path).expect("open sqlite db");
+        conn.execute_batch(
+            "CREATE TABLE messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                role TEXT NOT NULL,
+                content TEXT,
+                timestamp REAL NOT NULL
+            );",
+        )
+        .expect("create messages table");
+        conn.execute(
+            "INSERT INTO messages (session_id, role, content, timestamp) VALUES (?1, ?2, ?3, ?4)",
+            ("session-1", "assistant", "Second", 1_783_230_379.25_f64),
+        )
+        .expect("insert second message");
+        conn.execute(
+            "INSERT INTO messages (session_id, role, content, timestamp) VALUES (?1, ?2, ?3, ?4)",
+            ("session-1", "user", "First", 1_783_230_378.728_58_f64),
+        )
+        .expect("insert first message");
+        drop(conn);
+
+        let source = format!("sqlite:{}#session-1", db_path.display());
+        let messages = load_messages_sqlite(&source).expect("load sqlite messages");
+
+        assert_eq!(messages.len(), 2);
+        assert_eq!(messages[0].role, "user");
+        assert_eq!(messages[0].content, "First");
+        assert_eq!(messages[0].ts, Some(1_783_230_378_728));
+        assert_eq!(messages[1].content, "Second");
+    }
+
+    #[test]
+    fn load_messages_sqlite_supports_legacy_created_at_column() {
+        let dir = tempdir().expect("tempdir");
+        let db_path = dir.path().join("legacy-state.db");
+        let conn = Connection::open(&db_path).expect("open sqlite db");
+        conn.execute_batch(
+            "CREATE TABLE messages (
+                id INTEGER PRIMARY KEY,
+                session_id TEXT NOT NULL,
+                role TEXT NOT NULL,
+                content TEXT,
+                created_at INTEGER NOT NULL
+            );",
+        )
+        .expect("create messages table");
+        conn.execute(
+            "INSERT INTO messages (session_id, role, content, created_at) VALUES (?1, ?2, ?3, ?4)",
+            ("legacy-session", "user", "Legacy", 1_783_230_378_i64),
+        )
+        .expect("insert legacy message");
+        drop(conn);
+
+        let source = format!("sqlite:{}#legacy-session", db_path.display());
+        let messages = load_messages_sqlite(&source).expect("load legacy sqlite messages");
+
+        assert_eq!(messages.len(), 1);
+        assert_eq!(messages[0].content, "Legacy");
+        assert_eq!(messages[0].ts, Some(1_783_230_378_000));
     }
 
     #[test]

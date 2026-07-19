@@ -17,9 +17,11 @@ use super::{
     types::*,
     ProxyError,
 };
+use crate::archive::{local_archive_middleware, team_archive_middleware, ArchiveService};
 use crate::database::Database;
 use axum::{
     extract::DefaultBodyLimit,
+    middleware,
     routing::{any, get, post},
     Router,
 };
@@ -33,6 +35,7 @@ use tokio::task::JoinHandle;
 #[derive(Clone)]
 pub struct ProxyState {
     pub db: Arc<Database>,
+    pub archive: Arc<ArchiveService>,
     pub config: Arc<RwLock<ProxyConfig>>,
     pub status: Arc<RwLock<ProxyStatus>>,
     pub start_time: Arc<RwLock<Option<std::time::Instant>>>,
@@ -63,6 +66,7 @@ impl ProxyServer {
     pub fn new(
         config: ProxyConfig,
         db: Arc<Database>,
+        archive: Arc<ArchiveService>,
         app_handle: Option<tauri::AppHandle>,
     ) -> Self {
         // 创建共享的 ProviderRouter（熔断器状态将跨所有请求保持）
@@ -72,6 +76,7 @@ impl ProxyServer {
 
         let state = ProxyState {
             db,
+            archive,
             config: Arc::new(RwLock::new(config.clone())),
             status: Arc::new(RwLock::new(ProxyStatus::default())),
             start_time: Arc::new(RwLock::new(None)),
@@ -289,14 +294,9 @@ impl ProxyServer {
     }
 
     fn build_router(&self) -> Router {
-        Router::new()
-            // 健康检查
-            .route("/health", get(handlers::health_check))
-            .route("/status", get(handlers::get_status))
-            // Claude API (支持带前缀和不带前缀两种格式)
-            .route("/v1/messages", post(handlers::handle_messages))
-            .route("/claude/v1/messages", post(handlers::handle_messages))
-            // Claude Desktop 3P 本地 gateway（独立 provider namespace）
+        let local_api = Self::api_routes()
+            // Claude Desktop's device-local gateway uses its own generated
+            // token and is deliberately not exposed below `/team`.
             .route(
                 "/claude-desktop/v1/models",
                 get(handlers::handle_claude_desktop_models),
@@ -305,6 +305,32 @@ impl ProxyServer {
                 "/claude-desktop/v1/messages",
                 post(handlers::handle_claude_desktop_messages),
             )
+            .layer(middleware::from_fn_with_state(
+                self.state.clone(),
+                local_archive_middleware,
+            ));
+        let team_api = Self::api_routes().layer(middleware::from_fn_with_state(
+            self.state.clone(),
+            team_archive_middleware,
+        ));
+
+        Router::new()
+            // `/health` is the only intentionally anonymous endpoint. Public
+            // reverse proxies should expose `/team` plus this liveness probe.
+            .route("/health", get(handlers::health_check))
+            .merge(local_api)
+            .nest("/team", team_api)
+            // 提高默认请求体大小限制（避免 413 Payload Too Large）
+            .layer(DefaultBodyLimit::max(200 * 1024 * 1024))
+            .with_state(self.state.clone())
+    }
+
+    fn api_routes() -> Router<ProxyState> {
+        Router::new()
+            .route("/status", get(handlers::get_status))
+            // Claude API (支持带前缀和不带前缀两种格式)
+            .route("/v1/messages", post(handlers::handle_messages))
+            .route("/claude/v1/messages", post(handlers::handle_messages))
             // OpenAI Chat Completions API (Codex CLI，支持带前缀和不带前缀)
             .route("/chat/completions", post(handlers::handle_chat_completions))
             .route(
@@ -354,9 +380,6 @@ impl ProxyServer {
             .route("/gemini/v1beta/*path", any(handlers::handle_gemini))
             // Gemini 的 GA 版本也叫 /v1，给原 SDK 留一条出口
             .route("/gemini/v1/*path", any(handlers::handle_gemini))
-            // 提高默认请求体大小限制（避免 413 Payload Too Large）
-            .layer(DefaultBodyLimit::max(200 * 1024 * 1024))
-            .with_state(self.state.clone())
     }
 
     /// 在不重启服务的情况下更新运行时配置

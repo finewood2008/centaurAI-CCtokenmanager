@@ -7,6 +7,13 @@ use crate::services::provider::ProviderService;
 use crate::settings;
 use crate::store::AppState;
 
+/// Archive transfer is denied unless the current manual invocation opts in.
+/// Keeping this default at the command boundary makes calls from older
+/// frontends and automation local-data-safe.
+pub(crate) fn archive_sync_opt_in(requested: Option<bool>) -> bool {
+    requested.unwrap_or(false)
+}
+
 pub(crate) fn run_post_import_sync(db: Arc<Database>) -> Result<(), AppError> {
     let app_state = AppState::new(db);
     ProviderService::sync_current_to_live(&app_state)?;
@@ -55,7 +62,7 @@ pub(crate) fn success_payload_with_warning(backup_id: String, warning: Option<St
 
 #[cfg(test)]
 mod tests {
-    use super::{attach_warning, post_sync_warning_from_result};
+    use super::{archive_sync_opt_in, attach_warning, post_sync_warning_from_result};
     use serde_json::json;
 
     #[test]
@@ -93,5 +100,12 @@ mod tests {
             updated.get("warning").and_then(|v| v.as_str()),
             Some("post sync warning")
         );
+    }
+
+    #[test]
+    fn archive_sync_requires_explicit_true() {
+        assert!(!archive_sync_opt_in(None));
+        assert!(!archive_sync_opt_in(Some(false)));
+        assert!(archive_sync_opt_in(Some(true)));
     }
 }

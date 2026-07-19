@@ -102,7 +102,8 @@ impl StreamHandler {
                         yield Ok(bytes);
                     }
                     Ok(Some(Err(e))) => {
-                        log::error!("流错误: {e}");
+                        let safe_error = crate::archive::redact_log_text(&e.to_string());
+                        log::error!("流错误: {safe_error}");
                         yield Err(std::io::Error::other(e.to_string()));
                         break;
                     }

@@ -28,6 +28,7 @@ pub(crate) const DB_COMPAT_VERSION: u32 = 6;
 pub(crate) const LEGACY_DB_COMPAT_VERSION: u32 = 5;
 pub(crate) const REMOTE_DB_SQL: &str = "db.sql";
 pub(crate) const REMOTE_SKILLS_ZIP: &str = "skills.zip";
+pub(crate) const REMOTE_ARCHIVE_DB: &str = "conversation-archive.db";
 pub(crate) const REMOTE_MANIFEST: &str = "manifest.json";
 pub(crate) const MAX_DEVICE_NAME_LEN: usize = 64;
 pub(crate) const MAX_MANIFEST_BYTES: usize = 1024 * 1024;
@@ -81,6 +82,7 @@ pub(crate) struct ArtifactMeta {
 pub(crate) struct LocalSnapshot {
     pub db_sql: Vec<u8>,
     pub skills_zip: Vec<u8>,
+    pub archive_db: Option<Vec<u8>>,
     pub manifest_bytes: Vec<u8>,
     pub manifest_hash: String,
 }
@@ -104,6 +106,7 @@ impl RemoteLayout {
 
 pub(crate) fn build_local_snapshot(
     db: &crate::database::Database,
+    include_archive: bool,
 ) -> Result<LocalSnapshot, AppError> {
     // Export database to SQL string
     let sql_string = db.export_sql_string_for_sync()?;
@@ -121,6 +124,15 @@ pub(crate) fn build_local_snapshot(
     let skills_zip_path = tmp.path().join(REMOTE_SKILLS_ZIP);
     zip_skills_ssot(&skills_zip_path)?;
     let skills_zip = fs::read(&skills_zip_path).map_err(|e| AppError::io(&skills_zip_path, e))?;
+    // Archive data is local-only by default. It is only materialized for a
+    // caller that has received an explicit, per-operation opt-in. SQLCipher's
+    // online backup API produces a consistent encrypted file; the deployment
+    // key is never included in this snapshot or manifest.
+    let archive_db = if include_archive {
+        crate::archive::build_encrypted_archive_snapshot()?
+    } else {
+        None
+    };
 
     // Build artifact map and compute hashes
     let mut artifacts = BTreeMap::new();
@@ -138,6 +150,15 @@ pub(crate) fn build_local_snapshot(
             size: skills_zip.len() as u64,
         },
     );
+    if let Some(bytes) = &archive_db {
+        artifacts.insert(
+            REMOTE_ARCHIVE_DB.to_string(),
+            ArtifactMeta {
+                sha256: sha256_hex(bytes),
+                size: bytes.len() as u64,
+            },
+        );
+    }
 
     let snapshot_id = compute_snapshot_id(&artifacts);
     let manifest = SyncManifest {
@@ -156,6 +177,7 @@ pub(crate) fn build_local_snapshot(
     Ok(LocalSnapshot {
         db_sql,
         skills_zip,
+        archive_db,
         manifest_bytes,
         manifest_hash,
     })
@@ -172,6 +194,15 @@ pub(crate) fn compute_snapshot_id(artifacts: &BTreeMap<String, ArtifactMeta>) ->
         .map(|(name, meta)| format!("{}:{}", name, meta.sha256))
         .collect();
     sha256_hex(parts.join("|").as_bytes())
+}
+
+/// A remote archive artifact is ignored unless this operation explicitly
+/// requested archive restoration.
+pub(crate) fn should_download_archive(
+    restore_archive: bool,
+    artifacts: &BTreeMap<String, ArtifactMeta>,
+) -> bool {
+    restore_archive && artifacts.contains_key(REMOTE_ARCHIVE_DB)
 }
 
 pub(crate) fn effective_db_compat_version(
@@ -418,6 +449,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
 
     fn artifact(sha256: &str, size: u64) -> ArtifactMeta {
         ArtifactMeta {
@@ -446,6 +478,45 @@ mod tests {
         a2.insert("db.sql".to_string(), artifact("hash-b", 1));
 
         assert_ne!(compute_snapshot_id(&a1), compute_snapshot_id(&a2));
+    }
+
+    #[test]
+    fn remote_archive_requires_explicit_restore_opt_in() {
+        let mut artifacts = BTreeMap::new();
+        artifacts.insert(REMOTE_ARCHIVE_DB.to_string(), artifact("archive-hash", 10));
+
+        assert!(!should_download_archive(false, &artifacts));
+        assert!(should_download_archive(true, &artifacts));
+        assert!(!should_download_archive(true, &BTreeMap::new()));
+    }
+
+    #[test]
+    #[serial]
+    fn default_snapshot_excludes_conversation_archive() {
+        let test_home = tempfile::tempdir().expect("create isolated test home");
+        let previous_test_home = std::env::var_os("CC_SWITCH_TEST_HOME");
+        std::env::set_var("CC_SWITCH_TEST_HOME", test_home.path());
+        let config_dir = test_home.path().join(".cc-switch");
+        std::fs::create_dir_all(&config_dir).expect("create isolated config directory");
+        std::fs::write(
+            config_dir.join(REMOTE_ARCHIVE_DB),
+            b"must not be read by a default cloud snapshot",
+        )
+        .expect("seed an intentionally invalid archive database");
+
+        let db = crate::database::Database::memory().expect("create in-memory database");
+        let snapshot = build_local_snapshot(&db, false).expect("build local-only-safe snapshot");
+        let manifest: SyncManifest =
+            serde_json::from_slice(&snapshot.manifest_bytes).expect("parse manifest");
+
+        assert!(snapshot.archive_db.is_none());
+        assert!(!manifest.artifacts.contains_key(REMOTE_ARCHIVE_DB));
+
+        if let Some(previous) = previous_test_home {
+            std::env::set_var("CC_SWITCH_TEST_HOME", previous);
+        } else {
+            std::env::remove_var("CC_SWITCH_TEST_HOME");
+        }
     }
 
     #[test]

@@ -4,7 +4,7 @@ use serde_json::{json, Value};
 use tauri::State;
 
 use crate::commands::sync_support::{
-    attach_warning, post_sync_warning_from_result, run_post_import_sync,
+    archive_sync_opt_in, attach_warning, post_sync_warning_from_result, run_post_import_sync,
 };
 use crate::error::AppError;
 use crate::services::webdav_sync as webdav_sync_service;
@@ -102,24 +102,42 @@ pub async fn webdav_test_connection(
 }
 
 #[tauri::command]
-pub async fn webdav_sync_upload(state: State<'_, AppState>) -> Result<Value, String> {
+pub async fn webdav_sync_upload(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)] includeArchive: Option<bool>,
+) -> Result<Value, String> {
     let db = state.db.clone();
     let mut settings = require_enabled_webdav_settings()?;
+    let include_archive = archive_sync_opt_in(includeArchive);
 
-    let result = run_with_webdav_lock(webdav_sync_service::upload(&db, &mut settings)).await;
+    let result = run_with_webdav_lock(webdav_sync_service::upload(
+        &db,
+        &mut settings,
+        include_archive,
+    ))
+    .await;
     map_sync_result(result, |error| {
         persist_sync_error(&mut settings, error, "manual")
     })
 }
 
 #[tauri::command]
-pub async fn webdav_sync_download(state: State<'_, AppState>) -> Result<Value, String> {
+pub async fn webdav_sync_download(
+    state: State<'_, AppState>,
+    #[allow(non_snake_case)] restoreArchive: Option<bool>,
+) -> Result<Value, String> {
     let db = state.db.clone();
     let db_for_sync = db.clone();
     let mut settings = require_enabled_webdav_settings()?;
     let _auto_sync_suppression = crate::services::webdav_auto_sync::AutoSyncSuppressionGuard::new();
 
-    let sync_result = run_with_webdav_lock(webdav_sync_service::download(&db, &mut settings)).await;
+    let restore_archive = archive_sync_opt_in(restoreArchive);
+    let sync_result = run_with_webdav_lock(webdav_sync_service::download(
+        &db,
+        &mut settings,
+        restore_archive,
+    ))
+    .await;
     let mut result = map_sync_result(sync_result, |error| {
         persist_sync_error(&mut settings, error, "manual")
     })?;

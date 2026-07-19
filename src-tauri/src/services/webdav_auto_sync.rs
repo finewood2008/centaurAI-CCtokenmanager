@@ -120,6 +120,7 @@ async fn run_auto_sync_upload(
     let result = webdav_sync_service::run_with_sync_lock(webdav_sync_service::upload(
         db,
         &mut sync_settings,
+        false,
     ))
     .await;
     match result {

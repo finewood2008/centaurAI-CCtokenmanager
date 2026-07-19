@@ -16,9 +16,10 @@ use crate::settings::{update_s3_sync_status, S3SyncSettings, WebDavSyncStatus};
 
 use super::sync_protocol::{
     apply_snapshot, build_local_snapshot, localized, persist_sync_success_best_effort, sha256_hex,
-    validate_artifact_size_limit, validate_manifest_compat, verify_artifact, ArtifactMeta,
-    RemoteLayout, SyncManifest, DB_COMPAT_VERSION, MAX_MANIFEST_BYTES, MAX_SYNC_ARTIFACT_BYTES,
-    PROTOCOL_VERSION, REMOTE_DB_SQL, REMOTE_MANIFEST, REMOTE_SKILLS_ZIP,
+    should_download_archive, validate_artifact_size_limit, validate_manifest_compat,
+    verify_artifact, ArtifactMeta, RemoteLayout, SyncManifest, DB_COMPAT_VERSION,
+    MAX_MANIFEST_BYTES, MAX_SYNC_ARTIFACT_BYTES, PROTOCOL_VERSION, REMOTE_ARCHIVE_DB,
+    REMOTE_DB_SQL, REMOTE_MANIFEST, REMOTE_SKILLS_ZIP,
 };
 
 // ─── Sync lock ───────────────────────────────────────────────
@@ -46,14 +47,18 @@ pub async fn check_connection(settings: &S3SyncSettings) -> Result<(), AppError>
 }
 
 /// Upload local snapshot (db + skills) to remote S3.
+///
+/// `include_archive` must only be true for an explicitly confirmed manual
+/// operation. Automatic and legacy callers must pass false.
 pub async fn upload(
     db: &crate::database::Database,
     settings: &mut S3SyncSettings,
+    include_archive: bool,
 ) -> Result<Value, AppError> {
     settings.validate()?;
     let creds = creds_for(settings);
 
-    let snapshot = build_local_snapshot(db)?;
+    let snapshot = build_local_snapshot(db, include_archive)?;
 
     // Upload order: artifacts first, manifest last (best-effort consistency)
     let db_key = s3_key(settings, REMOTE_DB_SQL);
@@ -61,6 +66,11 @@ pub async fn upload(
 
     let skills_key = s3_key(settings, REMOTE_SKILLS_ZIP);
     s3::put_object(&creds, &skills_key, snapshot.skills_zip, "application/zip").await?;
+
+    if let Some(archive_db) = snapshot.archive_db {
+        let archive_key = s3_key(settings, REMOTE_ARCHIVE_DB);
+        s3::put_object(&creds, &archive_key, archive_db, "application/vnd.sqlite3").await?;
+    }
 
     let manifest_key = s3_key(settings, REMOTE_MANIFEST);
     s3::put_object(
@@ -90,9 +100,12 @@ pub async fn upload(
 }
 
 /// Download remote snapshot and apply to local database + skills.
+///
+/// Archive data is ignored unless `restore_archive` is explicitly true.
 pub async fn download(
     db: &crate::database::Database,
     settings: &mut S3SyncSettings,
+    restore_archive: bool,
 ) -> Result<Value, AppError> {
     settings.validate()?;
     let creds = creds_for(settings);
@@ -120,9 +133,21 @@ pub async fn download(
     let db_sql = download_and_verify(settings, &creds, REMOTE_DB_SQL, &manifest.artifacts).await?;
     let skills_zip =
         download_and_verify(settings, &creds, REMOTE_SKILLS_ZIP, &manifest.artifacts).await?;
+    let archive_db = if should_download_archive(restore_archive, &manifest.artifacts) {
+        Some(download_and_verify(settings, &creds, REMOTE_ARCHIVE_DB, &manifest.artifacts).await?)
+    } else {
+        None
+    };
+
+    if let Some(bytes) = &archive_db {
+        crate::archive::validate_encrypted_archive_snapshot(bytes)?;
+    }
 
     // Apply snapshot
     apply_snapshot(db, &db_sql, &skills_zip)?;
+    if let Some(bytes) = &archive_db {
+        crate::archive::restore_encrypted_archive_snapshot(bytes)?;
+    }
 
     let manifest_hash = sha256_hex(&manifest_bytes);
     let _persisted =

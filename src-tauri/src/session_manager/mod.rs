@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 use providers::{claude, codex, gemini, hermes, openclaw, opencode};
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionMeta {
     pub provider_id: String,
@@ -27,7 +27,7 @@ pub struct SessionMeta {
     pub resume_command: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionMessage {
     pub role: String,
@@ -80,6 +80,7 @@ pub fn scan_sessions() -> Vec<SessionMeta> {
     sessions.extend(r4);
     sessions.extend(r5);
     sessions.extend(r6);
+    sessions.extend(providers::plugin::scan_sessions());
 
     sessions.sort_by(|a, b| {
         let a_ts = a.last_active_at.or(a.created_at).unwrap_or(0);
@@ -90,7 +91,23 @@ pub fn scan_sessions() -> Vec<SessionMeta> {
     sessions
 }
 
+pub fn watch_roots() -> Vec<PathBuf> {
+    let mut roots = codex::session_roots();
+    roots.push(crate::config::get_claude_config_dir().join("projects"));
+    roots.push(opencode::get_opencode_base_dir());
+    roots.push(crate::openclaw_config::get_openclaw_dir().join("agents"));
+    roots.push(crate::gemini_config::get_gemini_dir().join("tmp"));
+    roots.push(crate::hermes_config::get_hermes_dir());
+    roots.extend(providers::plugin::watch_paths());
+    roots.sort();
+    roots.dedup();
+    roots
+}
+
 pub fn load_messages(provider_id: &str, source_path: &str) -> Result<Vec<SessionMessage>, String> {
+    if provider_id.starts_with("plugin:") {
+        return providers::plugin::load_messages(provider_id, source_path);
+    }
     // SQLite sessions use a "sqlite:" prefixed source_path
     if provider_id == "opencode" && source_path.starts_with("sqlite:") {
         return opencode::load_messages_sqlite(source_path);
@@ -116,6 +133,9 @@ pub fn delete_session(
     session_id: &str,
     source_path: &str,
 ) -> Result<bool, String> {
+    if provider_id.starts_with("plugin:") {
+        return providers::plugin::delete_session(provider_id, session_id, source_path);
+    }
     // SQLite sessions bypass the file-based deletion path
     if provider_id == "opencode" && source_path.starts_with("sqlite:") {
         return opencode::delete_session_sqlite(session_id, source_path);

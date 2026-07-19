@@ -171,7 +171,8 @@ pub(crate) async fn read_decoded_body(
             // 让下游诊断/客户端知道这仍是压缩字节
             Ok(None) => {}
             Err(e) => {
-                log::warn!("[{tag}] 解压失败 ({encoding}): {e}，使用原始数据");
+                let safe_error = crate::archive::redact_log_text(&e.to_string());
+                log::warn!("[{tag}] 解压失败 ({encoding}): {safe_error}，使用原始数据");
             }
         }
     }
@@ -812,10 +813,14 @@ pub fn create_logged_passthrough_stream(
                                                 }
                                                 _ => false,
                                             };
-                                            if collected {
-                                                log::debug!("[{tag}] <<< SSE 事件: {data}");
-                                            } else {
-                                                log::debug!("[{tag}] <<< SSE 数据: {data}");
+                                            if log::log_enabled!(log::Level::Debug) {
+                                                let safe_data =
+                                                    crate::archive::redact_log_text(data);
+                                                if collected {
+                                                    log::debug!("[{tag}] <<< SSE 事件: {safe_data}");
+                                                } else {
+                                                    log::debug!("[{tag}] <<< SSE 数据: {safe_data}");
+                                                }
                                             }
                                         } else {
                                             log::debug!("[{tag}] <<< SSE: [DONE]");
@@ -829,7 +834,8 @@ pub fn create_logged_passthrough_stream(
                     yield Ok(bytes);
                 }
                 Some(Err(e)) => {
-                    log::error!("[{tag}] 流错误: {e}");
+                    let safe_error = crate::archive::redact_log_text(&e.to_string());
+                    log::error!("[{tag}] 流错误: {safe_error}");
                     yield Err(std::io::Error::other(e.to_string()));
                     break;
                 }
@@ -1020,6 +1026,7 @@ mod tests {
     fn build_state(db: Arc<Database>) -> ProxyState {
         ProxyState {
             db: db.clone(),
+            archive: Arc::new(crate::archive::ArchiveService::new()),
             config: Arc::new(RwLock::new(ProxyConfig::default())),
             status: Arc::new(RwLock::new(ProxyStatus::default())),
             start_time: Arc::new(RwLock::new(None)),

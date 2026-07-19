@@ -19,10 +19,10 @@ use crate::settings::{update_webdav_sync_status, WebDavSyncSettings, WebDavSyncS
 
 use super::sync_protocol::{
     apply_snapshot, build_local_snapshot, effective_db_compat_version, localized,
-    persist_sync_success_best_effort, sha256_hex, validate_artifact_size_limit,
-    validate_manifest_compat, verify_artifact, ArtifactMeta, RemoteLayout, SyncManifest,
-    DB_COMPAT_VERSION, MAX_MANIFEST_BYTES, MAX_SYNC_ARTIFACT_BYTES, PROTOCOL_VERSION,
-    REMOTE_DB_SQL, REMOTE_MANIFEST, REMOTE_SKILLS_ZIP,
+    persist_sync_success_best_effort, sha256_hex, should_download_archive,
+    validate_artifact_size_limit, validate_manifest_compat, verify_artifact, ArtifactMeta,
+    RemoteLayout, SyncManifest, DB_COMPAT_VERSION, MAX_MANIFEST_BYTES, MAX_SYNC_ARTIFACT_BYTES,
+    PROTOCOL_VERSION, REMOTE_ARCHIVE_DB, REMOTE_DB_SQL, REMOTE_MANIFEST, REMOTE_SKILLS_ZIP,
 };
 
 pub(crate) mod archive;
@@ -61,16 +61,20 @@ pub async fn check_connection(settings: &WebDavSyncSettings) -> Result<(), AppEr
 }
 
 /// Upload local snapshot (db + skills) to remote.
+///
+/// `include_archive` must only be true for an explicitly confirmed manual
+/// operation. Automatic and legacy callers must pass false.
 pub async fn upload(
     db: &crate::database::Database,
     settings: &mut WebDavSyncSettings,
+    include_archive: bool,
 ) -> Result<Value, AppError> {
     settings.validate()?;
     let auth = auth_for(settings);
     let dir_segs = remote_dir_segments(settings, RemoteLayout::Current);
     ensure_remote_directories(&settings.base_url, &dir_segs, &auth).await?;
 
-    let snapshot = build_local_snapshot(db)?;
+    let snapshot = build_local_snapshot(db, include_archive)?;
 
     // Upload order: artifacts first, manifest last (best-effort consistency)
     let db_url = remote_file_url(settings, RemoteLayout::Current, REMOTE_DB_SQL)?;
@@ -78,6 +82,11 @@ pub async fn upload(
 
     let skills_url = remote_file_url(settings, RemoteLayout::Current, REMOTE_SKILLS_ZIP)?;
     put_bytes(&skills_url, &auth, snapshot.skills_zip, "application/zip").await?;
+
+    if let Some(archive_db) = snapshot.archive_db {
+        let archive_url = remote_file_url(settings, RemoteLayout::Current, REMOTE_ARCHIVE_DB)?;
+        put_bytes(&archive_url, &auth, archive_db, "application/vnd.sqlite3").await?;
+    }
 
     let manifest_url = remote_file_url(settings, RemoteLayout::Current, REMOTE_MANIFEST)?;
     put_bytes(
@@ -107,9 +116,12 @@ pub async fn upload(
 }
 
 /// Download remote snapshot and apply to local database + skills.
+///
+/// Archive data is ignored unless `restore_archive` is explicitly true.
 pub async fn download(
     db: &crate::database::Database,
     settings: &mut WebDavSyncSettings,
+    restore_archive: bool,
 ) -> Result<Value, AppError> {
     settings.validate()?;
     let auth = auth_for(settings);
@@ -142,9 +154,30 @@ pub async fn download(
         &snapshot.manifest.artifacts,
     )
     .await?;
+    let archive_db = if should_download_archive(restore_archive, &snapshot.manifest.artifacts) {
+        Some(
+            download_and_verify(
+                settings,
+                &auth,
+                snapshot.layout,
+                REMOTE_ARCHIVE_DB,
+                &snapshot.manifest.artifacts,
+            )
+            .await?,
+        )
+    } else {
+        None
+    };
+
+    if let Some(bytes) = &archive_db {
+        crate::archive::validate_encrypted_archive_snapshot(bytes)?;
+    }
 
     // Apply snapshot
     apply_snapshot(db, &db_sql, &skills_zip)?;
+    if let Some(bytes) = &archive_db {
+        crate::archive::restore_encrypted_archive_snapshot(bytes)?;
+    }
 
     let manifest_hash = sha256_hex(&snapshot.manifest_bytes);
     let _persisted = persist_sync_success_best_effort(

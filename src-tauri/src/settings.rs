@@ -276,6 +276,288 @@ impl S3SyncSettings {
     }
 }
 
+fn default_oidc_name_claim() -> String {
+    "name".to_string()
+}
+
+fn default_oidc_email_claim() -> String {
+    "email".to_string()
+}
+
+fn default_oidc_organization_claim() -> String {
+    "organization".to_string()
+}
+
+fn default_oidc_algorithms() -> Vec<String> {
+    vec!["RS256".to_string()]
+}
+
+fn default_archive_local_backup_enabled() -> bool {
+    true
+}
+
+fn default_archive_backup_interval_minutes() -> u32 {
+    15
+}
+
+fn default_archive_backup_retain_count() -> u32 {
+    30
+}
+
+fn default_local_history_reconcile_seconds() -> u32 {
+    300
+}
+
+/// OIDC/JWKS settings used exclusively by the authenticated `/team` gateway.
+/// No client secret is needed: TokenManager only validates bearer access tokens.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchiveOidcSettings {
+    #[serde(default)]
+    pub issuer: String,
+    #[serde(default)]
+    pub audience: String,
+    #[serde(default)]
+    pub jwks_url: String,
+    #[serde(default = "default_oidc_algorithms")]
+    pub allowed_algorithms: Vec<String>,
+    #[serde(default = "default_oidc_name_claim")]
+    pub name_claim: String,
+    #[serde(default = "default_oidc_email_claim")]
+    pub email_claim: String,
+    #[serde(default = "default_oidc_organization_claim")]
+    pub organization_claim: String,
+}
+
+/// Administrator-defined redaction expression. Expressions are applied after
+/// the built-in structural filters and before any archive write.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchiveRedactionRule {
+    pub name: String,
+    pub pattern: String,
+    #[serde(default = "default_true")]
+    pub enabled: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchiveLocalBackupSettings {
+    #[serde(default = "default_archive_local_backup_enabled")]
+    pub enabled: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub directory: Option<String>,
+    #[serde(default = "default_archive_backup_interval_minutes")]
+    pub min_interval_minutes: u32,
+    #[serde(default = "default_archive_backup_retain_count")]
+    pub retain_count: u32,
+    #[serde(default = "default_true")]
+    pub include_key: bool,
+}
+
+/// Local conversation ingestion and the loopback-only read API are deliberately
+/// independent from the authenticated team gateway.  A user can therefore
+/// archive local Agent history without configuring an OIDC provider.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchiveLocalHistorySettings {
+    #[serde(default)]
+    pub auto_import_enabled: bool,
+    #[serde(default = "default_true")]
+    pub memory_import_enabled: bool,
+    #[serde(default)]
+    pub api_enabled: bool,
+    #[serde(default)]
+    pub identity_write_enabled: bool,
+    #[serde(default = "default_local_history_reconcile_seconds")]
+    pub reconcile_interval_seconds: u32,
+}
+
+impl Default for ArchiveLocalHistorySettings {
+    fn default() -> Self {
+        Self {
+            auto_import_enabled: false,
+            memory_import_enabled: true,
+            api_enabled: false,
+            identity_write_enabled: false,
+            reconcile_interval_seconds: default_local_history_reconcile_seconds(),
+        }
+    }
+}
+
+impl Default for ArchiveLocalBackupSettings {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            directory: None,
+            min_interval_minutes: default_archive_backup_interval_minutes(),
+            retain_count: default_archive_backup_retain_count(),
+            include_key: true,
+        }
+    }
+}
+
+/// Device-local conversation archive configuration. The SQLCipher key is
+/// intentionally absent and comes from `TOKEN_MANAGER_ARCHIVE_KEY` or the
+/// protected device-local key file created by archive initialization.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchiveSettings {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
+    pub oidc: ArchiveOidcSettings,
+    #[serde(default)]
+    pub redaction_rules: Vec<ArchiveRedactionRule>,
+    #[serde(default)]
+    pub local_backup: ArchiveLocalBackupSettings,
+    #[serde(default)]
+    pub local_history: ArchiveLocalHistorySettings,
+}
+
+impl Default for ArchiveSettings {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            oidc: ArchiveOidcSettings {
+                allowed_algorithms: default_oidc_algorithms(),
+                name_claim: default_oidc_name_claim(),
+                email_claim: default_oidc_email_claim(),
+                organization_claim: default_oidc_organization_claim(),
+                ..ArchiveOidcSettings::default()
+            },
+            redaction_rules: Vec::new(),
+            local_backup: ArchiveLocalBackupSettings::default(),
+            local_history: ArchiveLocalHistorySettings::default(),
+        }
+    }
+}
+
+impl ArchiveSettings {
+    pub fn normalize(&mut self) {
+        if !self.local_history.api_enabled {
+            self.local_history.identity_write_enabled = false;
+        }
+        self.local_backup.directory = self
+            .local_backup
+            .directory
+            .as_deref()
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(ToOwned::to_owned);
+        // `iss` comparison is exact. A trailing slash is significant for
+        // providers such as Auth0 and must not be normalized away.
+        self.oidc.issuer = self.oidc.issuer.trim().to_string();
+        self.oidc.audience = self.oidc.audience.trim().to_string();
+        self.oidc.jwks_url = self.oidc.jwks_url.trim().to_string();
+        self.oidc.name_claim = self.oidc.name_claim.trim().to_string();
+        self.oidc.email_claim = self.oidc.email_claim.trim().to_string();
+        self.oidc.organization_claim = self.oidc.organization_claim.trim().to_string();
+        self.oidc.allowed_algorithms = self
+            .oidc
+            .allowed_algorithms
+            .iter()
+            .map(|value| value.trim().to_ascii_uppercase())
+            .filter(|value| !value.is_empty())
+            .collect();
+        self.oidc.allowed_algorithms.sort();
+        self.oidc.allowed_algorithms.dedup();
+        for rule in &mut self.redaction_rules {
+            rule.name = rule.name.trim().to_string();
+            rule.pattern = rule.pattern.trim().to_string();
+        }
+    }
+
+    pub fn validate_syntax(&self) -> Result<(), AppError> {
+        if self.local_backup.enabled {
+            if !(1..=1_440).contains(&self.local_backup.min_interval_minutes) {
+                return Err(AppError::Config(
+                    "归档本地快照间隔必须在 1 到 1440 分钟之间".to_string(),
+                ));
+            }
+            if !(1..=365).contains(&self.local_backup.retain_count) {
+                return Err(AppError::Config(
+                    "归档本地快照保留数量必须在 1 到 365 之间".to_string(),
+                ));
+            }
+            if let Some(directory) = self.local_backup.directory.as_deref() {
+                if directory.contains("://")
+                    || directory.starts_with("\\\\")
+                    || directory.starts_with("//")
+                {
+                    return Err(AppError::Config(
+                        "归档本地快照目录必须是本机文件系统路径，不能使用 URL 或 UNC 网络路径"
+                            .to_string(),
+                    ));
+                }
+                if !std::path::Path::new(directory).is_absolute() {
+                    return Err(AppError::Config(
+                        "归档本地快照目录必须使用绝对路径".to_string(),
+                    ));
+                }
+            }
+        }
+        if !(30..=86_400).contains(&self.local_history.reconcile_interval_seconds) {
+            return Err(AppError::Config(
+                "本机会话完整校准间隔必须在 30 到 86400 秒之间".to_string(),
+            ));
+        }
+        self.validate_capture_syntax()
+    }
+
+    /// Validate only the configuration that can affect fail-closed capture.
+    /// Local recovery snapshots are deliberately not an availability gate.
+    pub fn validate_capture_syntax(&self) -> Result<(), AppError> {
+        if !self.enabled {
+            return Ok(());
+        }
+        if self.oidc.issuer.is_empty()
+            || self.oidc.audience.is_empty()
+            || self.oidc.jwks_url.is_empty()
+        {
+            return Err(AppError::Config(
+                "启用对话归档前必须配置 OIDC issuer、audience 和 JWKS URL".to_string(),
+            ));
+        }
+        let issuer = url::Url::parse(&self.oidc.issuer)
+            .map_err(|e| AppError::Config(format!("OIDC issuer 无效: {e}")))?;
+        let jwks = url::Url::parse(&self.oidc.jwks_url)
+            .map_err(|e| AppError::Config(format!("JWKS URL 无效: {e}")))?;
+        for (label, value) in [("OIDC issuer", issuer), ("JWKS URL", jwks)] {
+            let loopback = value
+                .host_str()
+                .is_some_and(|host| host == "localhost" || host == "127.0.0.1" || host == "::1");
+            if value.scheme() != "https" && !loopback {
+                return Err(AppError::Config(format!(
+                    "{label} 必须使用 HTTPS（仅 localhost 允许 HTTP）"
+                )));
+            }
+        }
+        const SUPPORTED: &[&str] = &["RS256", "RS384", "RS512", "ES256", "ES384", "EDDSA"];
+        if self.oidc.allowed_algorithms.is_empty()
+            || self
+                .oidc
+                .allowed_algorithms
+                .iter()
+                .any(|alg| !SUPPORTED.contains(&alg.as_str()))
+        {
+            return Err(AppError::Config(
+                "OIDC 签名算法必须是 RS256/RS384/RS512/ES256/ES384/EdDSA".to_string(),
+            ));
+        }
+        for rule in self.redaction_rules.iter().filter(|rule| rule.enabled) {
+            if rule.name.is_empty() || rule.pattern.is_empty() {
+                return Err(AppError::Config(
+                    "归档脱敏规则的名称和正则表达式不能为空".to_string(),
+                ));
+            }
+            regex::Regex::new(&rule.pattern)
+                .map_err(|e| AppError::Config(format!("脱敏规则“{}”正则无效: {e}", rule.name)))?;
+        }
+        Ok(())
+    }
+}
+
 /// 本机自动迁移状态。
 ///
 /// 这里记录的是本机启动时执行过的一次性迁移；标记不随数据库同步。
@@ -426,6 +708,10 @@ pub struct AppSettings {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub s3_sync: Option<S3SyncSettings>,
 
+    // ===== 多用户对话归档 =====
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub archive: Option<ArchiveSettings>,
+
     // ===== WebDAV 备份设置（旧版，保留向后兼容）=====
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub webdav_backup: Option<serde_json::Value>,
@@ -497,6 +783,7 @@ impl Default for AppSettings {
             skill_storage_location: SkillStorageLocation::default(),
             webdav_sync: None,
             s3_sync: None,
+            archive: None,
             webdav_backup: None,
             backup_interval_hours: None,
             backup_retain_count: None,
@@ -578,6 +865,10 @@ impl AppSettings {
             if s3.is_empty() {
                 self.s3_sync = None;
             }
+        }
+
+        if let Some(archive) = &mut self.archive {
+            archive.normalize();
         }
     }
 
@@ -691,6 +982,9 @@ pub fn get_settings_for_frontend() -> AppSettings {
 
 pub fn update_settings(mut new_settings: AppSettings) -> Result<(), AppError> {
     new_settings.normalize_paths();
+    if let Some(archive) = &new_settings.archive {
+        archive.validate_syntax()?;
+    }
     save_settings_file(&new_settings)?;
 
     let mut guard = settings_store().write().unwrap_or_else(|e| {
@@ -1051,5 +1345,39 @@ mod tests {
         .expect("visible apps");
 
         assert!(!visible.is_visible(&AppType::ClaudeDesktop));
+    }
+
+    #[test]
+    fn archive_defaults_to_local_snapshots_without_remote_backup() {
+        let archive = ArchiveSettings::default();
+        assert!(archive.local_backup.enabled);
+        assert_eq!(archive.local_backup.min_interval_minutes, 15);
+        assert_eq!(archive.local_backup.retain_count, 30);
+        assert!(archive.local_backup.include_key);
+    }
+
+    #[test]
+    fn disabled_or_broken_snapshot_settings_never_gate_capture_validation() {
+        let mut archive = ArchiveSettings {
+            enabled: true,
+            oidc: ArchiveOidcSettings {
+                issuer: "https://issuer.example".to_string(),
+                audience: "token-manager-team".to_string(),
+                jwks_url: "https://issuer.example/.well-known/jwks.json".to_string(),
+                allowed_algorithms: vec!["RS256".to_string()],
+                name_claim: "name".to_string(),
+                email_claim: "email".to_string(),
+                organization_claim: "organization".to_string(),
+            },
+            ..ArchiveSettings::default()
+        };
+        archive.local_backup.min_interval_minutes = 0;
+        archive.local_backup.directory = Some("//server/share".to_string());
+
+        assert!(archive.validate_capture_syntax().is_ok());
+        assert!(archive.validate_syntax().is_err());
+
+        archive.local_backup.enabled = false;
+        assert!(archive.validate_syntax().is_ok());
     }
 }
