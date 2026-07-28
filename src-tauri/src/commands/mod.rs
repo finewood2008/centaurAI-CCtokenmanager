@@ -8,6 +8,7 @@ mod coding_plan;
 mod config;
 mod copilot;
 mod deeplink;
+mod dialog_async;
 mod env;
 mod failover;
 mod global_proxy;

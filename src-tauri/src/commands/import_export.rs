@@ -83,12 +83,15 @@ pub async fn save_file_dialog<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
     #[allow(non_snake_case)] defaultName: String,
 ) -> Result<Option<String>, String> {
-    let dialog = app.dialog();
-    let result = dialog
+    let builder = app
+        .dialog()
         .file()
         .add_filter("SQL", &["sql"])
-        .set_file_name(&defaultName)
-        .blocking_save_file();
+        .set_file_name(&defaultName);
+    let result = super::dialog_async::await_dialog_result(move |complete| {
+        builder.save_file(complete);
+    })
+    .await?;
 
     Ok(result.map(|p| p.to_string()))
 }
@@ -98,11 +101,11 @@ pub async fn save_file_dialog<R: tauri::Runtime>(
 pub async fn open_file_dialog<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
 ) -> Result<Option<String>, String> {
-    let dialog = app.dialog();
-    let result = dialog
-        .file()
-        .add_filter("SQL", &["sql"])
-        .blocking_pick_file();
+    let builder = app.dialog().file().add_filter("SQL", &["sql"]);
+    let result = super::dialog_async::await_dialog_result(move |complete| {
+        builder.pick_file(complete);
+    })
+    .await?;
 
     Ok(result.map(|p| p.to_string()))
 }
@@ -112,11 +115,14 @@ pub async fn open_file_dialog<R: tauri::Runtime>(
 pub async fn open_zip_file_dialog<R: tauri::Runtime>(
     app: tauri::AppHandle<R>,
 ) -> Result<Option<String>, String> {
-    let dialog = app.dialog();
-    let result = dialog
+    let builder = app
+        .dialog()
         .file()
-        .add_filter("ZIP / Skill", &["zip", "skill"])
-        .blocking_pick_file();
+        .add_filter("ZIP / Skill", &["zip", "skill"]);
+    let result = super::dialog_async::await_dialog_result(move |complete| {
+        builder.pick_file(complete);
+    })
+    .await?;
 
     Ok(result.map(|p| p.to_string()))
 }

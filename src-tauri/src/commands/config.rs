@@ -186,12 +186,12 @@ pub async fn pick_directory(
         .map(|p| p.trim().to_string())
         .filter(|p| !p.is_empty());
 
-    let result = tauri::async_runtime::spawn_blocking(move || {
-        let mut builder = app.dialog().file();
-        if let Some(path) = initial {
-            builder = builder.set_directory(path);
-        }
-        builder.blocking_pick_folder()
+    let mut builder = app.dialog().file();
+    if let Some(path) = initial {
+        builder = builder.set_directory(path);
+    }
+    let result = super::dialog_async::await_dialog_result(move |complete| {
+        builder.pick_folder(complete);
     })
     .await
     .map_err(|e| format!("弹出目录选择器失败: {e}"))?;
